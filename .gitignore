@@ -1,0 +1,188 @@
+# Operating system
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+.Trash-*
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*.un~
+*~
+.netrwhist
+Session.vim
+\#*\#
+.\#*
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.keystore
+
+# Logs and temporary files
+logs/
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+.ipynb_checkpoints/
+
+# C / C++
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+*.app
+
+# Node.js / JavaScript / TypeScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.next/
+.nuxt/
+.cache/
+coverage/
+*.tsbuildinfo
+
+# Java / JVM
+*.class
+*.jar
+*.war
+*.ear
+target/
+.gradle/
+hs_err_pid*
+
+# Go
+*.test
+*.prof
+vendor/
+
+# Rust
+**/*.rs.bk
+
+# C# / .NET
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userprefs
+.vs/
+
+# Ruby
+*.gem
+.bundle/
+/.yardoc/
+
+# PHP
+composer.phar
+.phpunit.result.cache
+
+# LaTeX (regenerable build artifacts; *.log and *.out are
+# already covered by the sections above). Note: arXiv requires
+# *.bbl in the submitted source; re-include it under
+# "Project-local" with `!*.bbl` when that applies.
+*.aux
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.dvi
+*.xdv
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.idx
+*.ilg
+*.ind
+*.glo
+*.gls
+*.glg
+*.nav
+*.snm
+*.vrb
+*.brf
+
+# Containers / infrastructure
+.terraform/
+*.tfstate
+*.tfstate.*
+*.auto.tfvars
+charts/*/charts/
+charts/*/*.tgz
+
+# ROS
+catkin_ws/*
+ros2_ws/
+devel/
+install/
+log/
+.catkin_workspace
+*.bag
+*.bag.active
+
+# Project-local

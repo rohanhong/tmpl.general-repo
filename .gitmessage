@@ -1,0 +1,243 @@
+# ============================================================
+#  Git Commit Message Template
+#  Project: <Project Name>
+#  Usage: Loaded by `git commit` once commit.template points
+#         here. Wire it up with `/repo-init`, or manually:
+#         git config commit.template .gitmessage
+# ============================================================
+#
+# ------------------------------------------------------------
+# Commit Message Format
+# ------------------------------------------------------------
+#
+#   <type>(<scope>): <subject>
+#   <BLANK LINE>
+#   <body>
+#   <BLANK LINE>
+#   <footer>
+#
+#   Header  - single line, imperative mood, no trailing period;
+#             subject within 50 characters when possible, hard
+#             limit 72 characters.
+#   Body    - one bullet per logical change, prefixed "- ";
+#             each bullet stays on a SINGLE physical line (no
+#             wrapping inside a bullet) and explains the why
+#             when non-obvious. A blank line separates the
+#             body from the header and footer.
+#   Footer  - machine-parseable metadata such as issue links,
+#             breaking change notices, and authorship tags.
+#
+# ------------------------------------------------------------
+# Commit Types
+# ------------------------------------------------------------
+#   feat      - Introduce a user-visible capability.
+#   fix       - Correct an incorrect or broken behavior.
+#   docs      - Update documentation or in-code comments only.
+#   style     - Adjust formatting without logic impact.
+#   refactor  - Restructure code without altering behavior.
+#   perf      - Improve runtime, memory, or throughput.
+#   test      - Add or revise automated test assets.
+#   build     - Modify build system, packaging, or toolchain.
+#   ci        - Adjust continuous integration or delivery.
+#   chore     - Routine maintenance with no functional impact.
+#   revert    - Roll back a previously merged commit.
+#   merge     - Record a non-trivial branch integration
+#               (non-fast-forward merge commits only).
+#   deps      - Bump or pin third-party dependencies.
+#   config    - Modify configuration files or default values.
+#   env       - Update environment setup or provisioning.
+#   ui        - Modify user-facing presentation or layout.
+#   security  - Address vulnerabilities or harden defenses.
+#
+# ------------------------------------------------------------
+# Scope
+# ------------------------------------------------------------
+#   - Scope is optional but recommended when the change is
+#     bounded to a known module, package, directory, or layer.
+#   - Prefer the most stable identifier available: top-level
+#     package name, directory name, or public component name.
+#   - Use a single scope per commit; split the commit when the
+#     change legitimately spans multiple scopes.
+#
+# ------------------------------------------------------------
+# Footer Tags
+# ------------------------------------------------------------
+#   Closes #<issue-id>      close referenced issue on merge (GitHub/GitLab style).
+#   Fixes #<issue-id>       alias for Closes.
+#   Refs #<issue-id>        reference without closing.
+#   BREAKING CHANGE: <msg>  flag incompatible interface change.
+#   Co-authored-by: <name> <email>   (human collaborators
+#                           only; never an AI, agent, or
+#                           assistant attribution)
+#
+# ============================================================
+# Branch Management
+# ============================================================
+#
+# ------------------------------------------------------------
+# Workflow Variant
+# ------------------------------------------------------------
+#   Adopt exactly one variant per repository, the same way a
+#   naming variant is adopted below, and record it on the
+#   `Workflow:` line. Tooling reads that line to decide which
+#   branches are protected and whether committing directly on
+#   a trunk is allowed.
+#
+#   Workflow: <not recorded>
+#
+#   git-flow     - `main` plus `develop` trunks; all work lands
+#                  through short-lived branches and a reviewed
+#                  PR or MR. Protected: `main`, `develop`,
+#                  `support/*`. Default for team repositories.
+#   github-flow  - Single `main` trunk; work lands through
+#                  short-lived branches and a PR or MR. No
+#                  `develop`. Protected: `main`, `support/*`.
+#   trunk-solo   - Single `main` trunk; committing directly on
+#                  `main` is the normal path and branches are
+#                  optional. No `develop`. Protected: none.
+#                  Intended for single-maintainer repositories.
+#
+#   Force push and history rewrite stay forbidden on `main`,
+#   `develop`, and `support/*` in EVERY variant, including
+#   `trunk-solo` where those branches are otherwise open.
+#
+#   When the `Workflow:` line is absent or still reads
+#   `<not recorded>`, tooling assumes `git-flow` (the
+#   strictest variant) and asks which one applies; record the
+#   answer here so the question does not return. Tooling must not guess from history shape: a
+#   squash-merged PR flow and a direct-commit trunk produce
+#   the same linear topology.
+#
+# ------------------------------------------------------------
+# Branch Types
+# ------------------------------------------------------------
+#   main       - Production-ready, release-tagged trunk.
+#                Protected (see Protected Branches below).
+#   develop    - Integration trunk for the next release cycle.
+#                Receives merges from `feature/*` and
+#                `bugfix/*` branches. Protected.
+#   feature/*  - Net-new functionality scoped to a single
+#                concern. Branched from `develop`, merged
+#                back into `develop`, then deleted.
+#   bugfix/*   - Non-urgent defect fix targeting the next
+#                release. Branched from `develop`, merged
+#                back into `develop`, then deleted.
+#   release/*  - Release stabilization and final adjustments.
+#                Branched from `develop`, merged into `main`
+#                with a release tag, then back-merged into
+#                `develop`.
+#   hotfix/*   - Urgent fix against the production line.
+#                Branched from `main`, merged into `main`
+#                with a patch tag, then back-merged into
+#                `develop` and any active `release/*` branch.
+#   support/*  - Long-lived maintenance line for a previous
+#                major version. Branched from the matching
+#                release tag on `main`; kept alive as long as
+#                that major version is supported.
+#
+#   The list above describes `git-flow`. Under `github-flow`
+#   and `trunk-solo` there is no `develop`: `feature/*` and
+#   `bugfix/*` branch from `main` and merge back into `main`,
+#   and `release/*` stabilizes on `main` directly. Under
+#   `trunk-solo` every short-lived type stays available but is
+#   optional rather than mandatory.
+#
+# ------------------------------------------------------------
+# Branch Naming
+# ------------------------------------------------------------
+#   The variants below apply to short-lived branches only.
+#   Long-lived branches `main`, `develop`, and `support/*`
+#   use their fixed names without a `<type>/` prefix.
+#
+#   Adopt exactly one of the following variants per repository
+#   and apply it consistently across all contributors.
+#
+#   Variant A : <type>/<issue-id>-<short-desc>
+#               Use when an issue tracker is the source of
+#               truth; the id keeps branches traceable.
+#               `<issue-id>` follows the tracker's native
+#               format (numeric id, or prefix plus numeric id).
+#
+#   Variant B : <type>/<scope>/<short-desc>
+#               Use when work is organized by module or
+#               package and naturally aligns with commit
+#               scope.
+#
+#   Variant C : <type>/<short-desc>
+#               Use when issue tracking is informal and PR
+#               titles already carry the necessary context.
+#
+#   Record the adopted variant on the line below once decided
+#   (`/repo-init` maintains it; tooling reads it):
+#   Adopted: <not recorded>
+#
+# ------------------------------------------------------------
+# Naming Character Rules
+# ------------------------------------------------------------
+#   - Use lowercase ASCII letters, digits, and `-` only.
+#   - Use `/` strictly as the type or scope separator.
+#   - Join words inside `<short-desc>` with `-` (hyphen).
+#   - Do not use spaces, underscores, uppercase, accented
+#     letters, or non-ASCII glyphs.
+#   - Keep total branch name length within 60 characters to
+#     remain readable in tools and CI logs.
+#
+# ------------------------------------------------------------
+# Protected Branches
+# ------------------------------------------------------------
+#   The protected set follows the active workflow variant:
+#     git-flow    -> `main`, `develop`, `support/*`
+#     github-flow -> `main`, `support/*`
+#     trunk-solo  -> none
+#
+#   - A protected branch forbids direct commit and direct push;
+#     updates land only via PR or MR.
+#   - Every PR or MR against a protected branch requires at
+#     least one approving review and a green CI status before
+#     merge.
+#   - Force push and history rewrite are forbidden on `main`,
+#     `develop`, and `support/*` under EVERY variant, including
+#     `trunk-solo`, where direct commits are allowed but
+#     rewriting published history still is not.
+#   - Force push is permitted only on personal short-lived
+#     branches (`feature/*`, `bugfix/*`, `hotfix/*`, and
+#     `release/*` before its first release tag).
+#
+# ------------------------------------------------------------
+# Tags
+# ------------------------------------------------------------
+#   - Annotated tags only (`git tag -a`); lightweight tags are
+#     local bookmarks and never pushed.
+#   - Release and patch tags use `v<major>.<minor>.<patch>`
+#     (pre-release suffixes like `-rc.1` are allowed) and sit
+#     on `main` at the release/* or hotfix/* merge commit.
+#   - Never move, delete, or force-push a published tag; ship
+#     a new version instead.
+#
+# ------------------------------------------------------------
+# PR/MR and Commit Linkage
+# ------------------------------------------------------------
+#   - PR or MR title MUST follow the commit header format:
+#       <type>(<scope>): <subject>
+#   - With `squash merge`, the PR or MR title becomes the
+#     final commit subject and the description becomes the
+#     final commit body; verify both against this template
+#     before approving the merge.
+#   - With `merge commit`, every contained commit must
+#     already satisfy this template.
+#   - Reference issues in the PR or MR description with
+#     `Closes #<issue-id>`, `Fixes #<issue-id>`, or
+#     `Refs #<issue-id>` so that issue state stays consistent
+#     with branch history.
+#
+# ============================================================
+# Skeleton (kept commented so saving an unedited buffer aborts
+# the commit instead of landing literal placeholders; write the
+# real message at the top of this buffer)
+# ============================================================
+#   <type>(<scope>): <subject>
+#
+#   <body>
+#
+#   Closes #<issue-id>
+# ============================================================

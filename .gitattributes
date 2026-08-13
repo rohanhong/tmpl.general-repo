@@ -1,0 +1,354 @@
+# =====================================================================
+# Portable Git attributes.
+# Normalize to LF in the repository; check out CRLF only for Windows-only
+# scripts. Also assigns language-aware diff hunk headers, marks known
+# binary formats, and excludes dev metadata from `git archive`.
+# Anything not listed below falls back to `text=auto` content detection.
+# =====================================================================
+
+* text=auto eol=lf
+
+# =====================================================================
+# Language-aware diff hunk headers (git built-in drivers only)
+# =====================================================================
+*.ada           diff=ada
+*.adb           diff=ada
+*.ads           diff=ada
+*.bash          diff=bash
+*.bib           diff=bibtex
+*.c             diff=cpp
+*.cc            diff=cpp
+*.cxx           diff=cpp
+*.cpp           diff=cpp
+*.c++           diff=cpp
+*.h             diff=cpp
+*.hh            diff=cpp
+*.hpp           diff=cpp
+*.hxx           diff=cpp
+*.h++           diff=cpp
+*.inl           diff=cpp
+*.ipp           diff=cpp
+*.tpp           diff=cpp
+*.cs            diff=csharp
+*.csx           diff=csharp
+*.css           diff=css
+*.scss          diff=css
+*.dts           diff=dts
+*.dtsi          diff=dts
+*.ex            diff=elixir
+*.exs           diff=elixir
+*.f             diff=fortran
+*.for           diff=fortran
+*.ftn           diff=fortran
+*.fpp           diff=fortran
+*.f90           diff=fortran
+*.f95           diff=fortran
+*.f03           diff=fortran
+*.f08           diff=fortran
+*.go            diff=golang
+*.html          diff=html
+*.htm           diff=html
+*.java          diff=java
+*.kt            diff=kotlin
+*.kts           diff=kotlin
+*.md            diff=markdown
+*.markdown      diff=markdown
+*.mdx           diff=markdown
+*.mm            diff=objc
+*.pas           diff=pascal
+*.pp            diff=pascal
+*.dpr           diff=pascal
+*.dpk           diff=pascal
+*.lpr           diff=pascal
+*.php           diff=php
+*.pl            diff=perl
+*.pm            diff=perl
+*.py            diff=python
+*.pyi           diff=python
+*.pyw           diff=python
+*.rb            diff=ruby
+*.rs            diff=rust
+*.scm           diff=scheme
+*.ss            diff=scheme
+*.tex           diff=tex
+*.cls           diff=tex
+*.sty           diff=tex
+*.dtx           diff=tex
+*.ltx           diff=tex
+*.cmake         diff=cmake
+*.cmake.in      diff=cmake
+CMakeLists.txt  diff=cmake
+
+# =====================================================================
+# Windows-only scripts: retain CRLF on Windows checkouts
+# =====================================================================
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.ps1           text eol=crlf
+*.psm1          text eol=crlf
+*.psd1          text eol=crlf
+*.vbs           text eol=crlf
+*.reg           text eol=crlf
+
+# =====================================================================
+# Raw bytes: disable EOL normalization but keep diff for review
+# (patches contain CRLF lines that must survive; PEM certs and keys
+#  carry meaningful textual headers worth diffing).
+# =====================================================================
+*.patch         -text
+*.diff          -text
+*.pem           -text
+*.crt           -text
+*.cer           -text
+*.key           -text
+*.csr           -text
+
+# =====================================================================
+# Binary: machine learning models, weights, and serialized arrays
+# =====================================================================
+*.pt            binary
+*.pth           binary
+*.ckpt          binary
+*.safetensors   binary
+*.onnx          binary
+*.pb            binary
+*.tflite        binary
+*.h5            binary
+*.hdf5          binary
+*.pkl           binary
+*.pickle        binary
+*.joblib        binary
+*.npy           binary
+*.npz           binary
+*.mat           binary
+*.parquet       binary
+*.arrow         binary
+*.feather       binary
+*.msgpack       binary
+
+# =====================================================================
+# Binary: raster images
+# =====================================================================
+# Web rasters
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.bmp           binary
+*.webp          binary
+# Wide-gamut, HDR, scientific
+*.tif           binary
+*.tiff          binary
+*.heic          binary
+*.heif          binary
+*.avif          binary
+*.exr           binary
+*.hdr           binary
+*.dpx           binary
+# Icons
+*.ico           binary
+*.icns          binary
+# Editable / vendor formats
+*.psd           binary
+*.ai            binary
+*.eps           binary
+*.indd          binary
+*.fla           binary
+*.sketch        binary
+*.xd            binary
+# Camera RAW
+*.raw           binary
+*.cr2           binary
+*.nef           binary
+*.dng           binary
+*.arw           binary
+*.orf           binary
+*.rw2           binary
+# Color profiles
+*.icc           binary
+*.icm           binary
+
+# =====================================================================
+# Binary: NetPBM grayscale and pixel maps. Override per-path with
+# `text eol=lf` if a project stores ASCII variants (P2/P3) instead of
+# binary (P5/P6).
+# =====================================================================
+*.pgm           binary
+*.ppm           binary
+
+# =====================================================================
+# Binary: video
+# =====================================================================
+*.mp4           binary
+*.mov           binary
+*.avi           binary
+*.mkv           binary
+*.webm          binary
+*.flv           binary
+*.wmv           binary
+*.m4v           binary
+*.mpg           binary
+*.mpeg          binary
+*.3gp           binary
+*.3g2           binary
+
+# =====================================================================
+# Binary: audio
+# =====================================================================
+*.mp3           binary
+*.wav           binary
+*.flac          binary
+*.ogg           binary
+*.m4a           binary
+*.aac           binary
+*.opus          binary
+*.aiff          binary
+*.wma           binary
+
+# =====================================================================
+# Binary: 3D and CAD. Override per-path with `text eol=lf` for ASCII
+# variants of PLY or STL.
+# =====================================================================
+*.stl           binary
+*.fbx           binary
+*.glb           binary
+*.usdz          binary
+*.3ds           binary
+*.blend         binary
+*.step          binary
+*.stp           binary
+*.iges          binary
+*.igs           binary
+*.ply           binary
+*.pcd           binary
+*.las           binary
+*.laz           binary
+*.e57           binary
+
+# =====================================================================
+# Binary: office documents
+# =====================================================================
+*.pdf           binary
+*.doc           binary
+*.docx          binary
+*.xls           binary
+*.xlsx          binary
+*.ppt           binary
+*.pptx          binary
+*.odt           binary
+*.ods           binary
+*.odp           binary
+*.rtf           binary
+
+# =====================================================================
+# Binary: archives, disk images, and VM containers
+# =====================================================================
+*.zip           binary
+*.tar           binary
+*.tgz           binary
+*.tbz           binary
+*.tbz2          binary
+*.txz           binary
+*.gz            binary
+*.bz2           binary
+*.xz            binary
+*.zst           binary
+*.lz            binary
+*.lz4           binary
+*.lzma          binary
+*.br            binary
+*.7z            binary
+*.rar           binary
+*.deb           binary
+*.rpm           binary
+*.dmg           binary
+*.iso           binary
+*.img           binary
+*.cab           binary
+*.msi           binary
+*.qcow2         binary
+*.vdi           binary
+*.vmdk          binary
+*.ova           binary
+*.vhd           binary
+*.vhdx          binary
+
+# =====================================================================
+# Binary: mobile and desktop application packages
+# =====================================================================
+*.apk           binary
+*.aab           binary
+*.ipa           binary
+*.appx          binary
+*.appxbundle    binary
+*.msix          binary
+
+# =====================================================================
+# Binary: compiled, linker, and proprietary lock artifacts
+# =====================================================================
+*.o             binary
+*.so            binary
+*.so.*          binary
+*.dylib         binary
+*.dll           binary
+*.a             binary
+*.lib           binary
+*.exe           binary
+*.out           binary
+*.class         binary
+*.dex           binary
+*.jar           binary
+*.war           binary
+*.ear           binary
+*.pyc           binary
+*.pyo           binary
+*.pyd           binary
+*.whl           binary
+*.egg           binary
+*.wasm          binary
+bun.lockb       binary
+
+# =====================================================================
+# Binary: fonts
+# =====================================================================
+*.ttf           binary
+*.otf           binary
+*.woff          binary
+*.woff2         binary
+*.eot           binary
+*.pfa           binary
+*.pfb           binary
+*.bdf           binary
+*.pcf           binary
+*.fnt           binary
+
+# =====================================================================
+# Binary: databases and embedded storage
+# =====================================================================
+*.db            binary
+*.sqlite        binary
+*.sqlite3       binary
+*.mdb           binary
+*.accdb         binary
+
+# =====================================================================
+# Binary: signed, encrypted, or DER-encoded blobs. One-byte change
+# invalidates the signature or ciphertext, so textual diff is misleading.
+# =====================================================================
+*.asc           binary
+*.gpg           binary
+*.pgp           binary
+*.sig           binary
+*.p12           binary
+*.pfx           binary
+
+# =====================================================================
+# Archive export: omit dev metadata from `git archive` tarballs
+# =====================================================================
+.gitattributes  export-ignore
+.gitignore      export-ignore
+.gitmodules     export-ignore
+.gitmessage     export-ignore
+.claude/        export-ignore
+.github/        export-ignore
+.gitlab/        export-ignore
