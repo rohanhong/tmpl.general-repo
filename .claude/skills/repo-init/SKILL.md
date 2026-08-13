@@ -110,7 +110,7 @@ Run every command in this skill through the `Bash` tool; the redirections used a
       - Use the git-* skills for git operations.
       ```
 
-   e. **Origin remote (only when absent).** Take the URL from the user (ask as free text if not already given), render `git remote add origin <url>`, then ask **add** / **abort**. Verify with `git remote -v` and include it in the step-9 report. Adding the remote never pushes anything; publishing stays with `git-push`.
+   e. **Origin remote (only when absent).** Take the URL from the user (ask as free text if not already given), render `git remote add origin <url>`, then ask **add** / **abort**. When the user has no URL-form preference, probe `git config --get credential.helper` first: a `manager` hit (the Git-for-Windows and GitHub Desktop default) means the HTTPS form authenticates through the existing credential manager, while SSH needs separate key and known_hosts setup; recommend HTTPS in that case, and mention that GitHub Desktop's Add-local-repository + Publish wires an HTTPS origin automatically. Verify with `git remote -v` and include it in the step-9 report. Adding the remote never pushes anything; publishing stays with `git-push`.
 
    f. **Python environment.** Invoke the `py-env-setup` skill, which owns its own probing, version recommendation, and gates. Do not duplicate any of its questions here.
 
