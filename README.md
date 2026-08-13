@@ -68,7 +68,7 @@ AI co-authors, and gate irreversible actions behind an explicit confirmation.
 | Skill | Owns |
 |---|---|
 | `git-branch-create` | Cut a named short-lived branch from the right base |
-| `git-commit` | Stage, draft per `.gitmessage`, confirm, commit via heredoc; offers single vs batched commits for mixed sets, drafting all batch messages up front |
+| `git-commit` | Stage, draft per `.gitmessage`, confirm, commit via heredoc; mixed sets go through a batch plan drafted up front, approved in one bulk pass, committed consecutively |
 | `git-fetch` | Refresh remote state and report ahead/behind (no gate; read-only) |
 | `git-pull` | Fast-forward only; hands divergence to `git-merge` |
 | `git-merge` | `--no-ff` merge with a drafted merge commit |

@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: Stage the user-named paths (or the whole workspace after confirmation), draft a .gitmessage-compliant message inline in chat, get approval, then commit via a `git commit -F -` heredoc. A mixed change set is offered as one commit or an ordered batch plan whose messages are ALL drafted up front and then confirmed batch by batch. Use for "commit this", "commit <paths>", "make a commit", or landing pending changes. Never writes the message to a file and never adds an AI co-author.
+description: Stage the user-named paths (or the whole workspace after confirmation), draft a .gitmessage-compliant message inline in chat, get approval, then commit via a `git commit -F -` heredoc. A mixed change set is offered as one commit or an ordered batch plan whose messages are ALL drafted up front, approved in one bulk pass, then committed consecutively. Use for "commit this", "commit <paths>", "make a commit", or landing pending changes. Never writes the message to a file and never adds an AI co-author.
 ---
 
 # Goal
@@ -105,13 +105,12 @@ Run every command in this skill through the `Bash` tool; the redirections and th
      * **approve**: proceed to step 9 with the current draft.
      * **edit**: the user replies with free-text edits ("drop bullet 3", "add `Refs #42`", "shorten the subject", or a complete replacement). Apply them, re-render the draft inline, and re-ask. Loop until approved or aborted.
      * **abort**: stop. The staged set stays as is; the draft is discarded with the conversation.
-   * **Batched**: render the complete plan once (every batch with its path list and full draft), then walk the batches IN ORDER, one `AskUserQuestion` per batch with the `preview` field showing that batch's draft: **commit** / **edit** / **skip** / **abort rest**.
-     * **commit**: execute step 9 for this batch immediately, then move to the next batch.
-     * **edit**: apply free-text edits to THIS batch's message, or move a path between this batch and a LATER one (a move re-renders both affected drafts); re-ask. Never reopen an already-committed batch.
-     * **skip**: leave this batch's changes pending and uncommitted; continue with the next batch.
-     * **abort rest**: stop the sequence. Batches already committed stay committed; say so plainly and list what remains pending.
+   * **Batched**: render the complete plan once (every batch with its path list and full draft), then collect ALL batch decisions BEFORE committing anything, so approval is one fast pass and execution runs uninterrupted:
+     * **Collect decisions in bulk.** Ask every batch's decision via `AskUserQuestion`, packing up to 4 batch-questions per call (a 5-batch plan is one call of 4 plus one of 1); each question's `preview` shows that batch's draft and path list. Options per batch: **commit** / **edit** / **skip**. Aborting the whole sequence is always available as a typed reply on any question; nothing has committed yet at this point.
+     * **edit**: apply the free-text edits to that batch's message, or move a path between any two not-yet-committed batches (a move re-renders both affected drafts). Re-ask ONLY the edited batches (bulk again when several); already-decided batches keep their answers.
+     * **Execute once decisions are final.** Run step 9 for every commit-marked batch consecutively, in plan order, with NO prompts in between. **skip** batches stay pending and uncommitted. On any failure, stop the run per step 10 and report which batches landed and which remain.
 
-9. **Commit via heredoc, no file.** In batched mode, run this step once per approved batch: first unstage anything staged that is outside the batch (`git reset HEAD -- <path>...`), stage exactly the batch (`git add -- <path>...`; untracked files only after their step-4 per-file confirmation), and verify `git diff --cached --stat` matches the batch's path list before committing. Pipe the approved message to `git commit -F -` through a quoted heredoc (the quoted terminator prevents shell expansion of the body):
+9. **Commit via heredoc, no file.** In batched mode, run this step once per approved batch, consecutively in plan order with no user interaction in between (every approval was already collected in step 8): first unstage anything staged that is outside the batch (`git reset HEAD -- <path>...`), stage exactly the batch (`git add -- <path>...`; untracked files only after their step-4 per-file confirmation), and verify `git diff --cached --stat` matches the batch's path list before committing. Pipe the approved message to `git commit -F -` through a quoted heredoc (the quoted terminator prevents shell expansion of the body):
    ```
    git commit -F - <<'COMMIT_MSG_EOF'
    <type>(<scope>): <subject>
@@ -141,7 +140,8 @@ The full specification lives in `references/message-spec.md` next to this file (
 * NEVER `--amend` after a hook failure. The failed commit never landed, so `--amend` would silently rewrite the PREVIOUS commit. Always create a new commit instead.
 * NEVER commit files matching the step-6 sensitive-content patterns without per-file user confirmation.
 * NEVER draft batch messages lazily. In batched mode every message is written in step 7 before the first batch is confirmed; interleaving draft-confirm-commit per batch is the incoherence the batched path exists to prevent.
-* NEVER amend, reorder, or otherwise reopen an already-committed batch during the step-8 walk. A later edit request applies to later batches only.
+* NEVER amend, reorder, or otherwise reopen an already-committed batch. Once step-9 execution starts, edit requests apply only to batches that have not yet committed.
+* NEVER interleave approval and execution in batched mode. Collect every batch's decision first (step 8, bulk-packed questions), then commit the approved batches consecutively; the one-question-one-commit loop is the inefficiency the bulk pass exists to remove.
 * NEVER commit onto a detached HEAD under any workflow variant.
 * NEVER commit on a branch the active variant protects without an explicit in-turn opt-in. The protected set comes from `.gitmessage`'s "Workflow Variant" section, never from a hardcoded list in this file.
 * NEVER assume a permissive variant. When `.gitmessage` declares no `Workflow:` line, or the line carries an unrecognized value (such as the shipped `<not recorded>` placeholder), treat the repo as `git-flow` (the strictest) until the user says otherwise, and record their answer in `.gitmessage` rather than remembering it across turns.
