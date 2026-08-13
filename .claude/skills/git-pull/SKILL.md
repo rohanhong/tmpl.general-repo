@@ -26,7 +26,7 @@ Run every command in this skill through the `Bash` tool; the redirections used a
    * `git status --short` (working-tree state).
    * `git fetch origin <branch>` (refresh the remote ref). Route a non-zero exit before proceeding:
      * `couldn't find remote ref` (exit 128): the branch has never been pushed, so there is nothing to pull. Say so, suggest `/git-push` to publish it, and STOP.
-     * `'origin' does not appear to be a git repository`: the repo has no origin remote. Suggest `git remote add origin <url>` (user-run) and STOP; recommend the HTTPS URL form when `git config --get credential.helper` reports a manager, since SSH needs separate key and known_hosts setup.
+     * `'origin' does not appear to be a git repository`: the repo has no origin remote. Suggest `git remote add origin <url>` (user-run) and STOP; both transports work, so recommend whichever the machine is set up for (a credential manager favors HTTPS, a working ssh auth favors SSH; dual probe per `git-push` step 2).
      * Anything else (network, auth, proxy): surface stderr verbatim and STOP.
 
    Then, after the fetch completes, run in parallel:
