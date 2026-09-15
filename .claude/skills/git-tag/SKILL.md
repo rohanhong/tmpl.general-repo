@@ -28,13 +28,15 @@ Run every command in this skill through the `Bash` tool; the redirections and th
 
 2. **Gather state.** Run in parallel:
    * `git rev-parse --verify <target>` (resolve the target to a SHA; surface the verbatim error if it does not resolve).
-   * `git tag --list 'v*' --sort=-v:refname` capped at 10 (existing versions; catches duplicates and informs the next number).
+   * `git rev-parse --verify --quiet refs/tags/<name>` (exact-name duplicate probe; any output means the tag already exists locally).
+   * `git ls-remote --tags origin refs/tags/<name>` when `git remote` lists `origin` (the same probe against origin, for a tag published from another clone and never fetched here; a network failure is not fatal, note it and continue, since step 7 would surface the collision anyway).
+   * `git tag --list 'v*' --sort=-v:refname` capped at 10 (recent versions, to inform the next number and the step-4 changelog range; NOT the duplicate check, since ten newest entries would miss an older name).
    * `git log -1 --format='%h %s' <target>` (what is being tagged, for the plan render).
-   * `git branch --contains <target> --format='%(refname:short)'` (which branches reach the commit).
+   * `git branch -a --contains <target> --format='%(refname:short)'` (local AND remote-tracking branches that reach the commit; a local `main` lags behind a merge that landed on the server, so `origin/main` counts in step 3).
 
-   If the tag name already exists, STOP and report it with its current target (`git rev-parse <tag>`). Never retarget.
+   If the tag name already exists, locally or on origin, STOP and report it with its current target (`git rev-parse <tag>` locally; the SHA from `ls-remote` for origin). Never retarget. For an origin-only hit, `/git-fetch` brings the tag down so the two clones agree.
 
-3. **Sanity-check placement.** Release and patch tags belong on the trunk: if the step-2 containment list does not include `main` (or the repo's equivalent trunk), surface that prominently in the plan. Tagging off-trunk is allowed only after the user explicitly confirms the anomaly in the current turn.
+3. **Sanity-check placement.** Release and patch tags belong on the trunk: if the step-2 containment list includes neither `main` nor `origin/main` (or the repo's equivalent trunk), surface that prominently in the plan. Tagging off-trunk is allowed only after the user explicitly confirms the anomaly in the current turn. When only `origin/main` contains the target, the placement is fine and the local `main` is merely behind; mention `/git-pull main` as a follow-up, not a blocker, since the tag pins a SHA rather than a branch.
 
 4. **Draft the tag message inline (no file).** One short line naming the release (for example `Release v1.4.0`), optionally followed by a blank line and one bullet per headline change since the previous tag (`git log <prev-tag>..<target> --oneline` is the fuel; skip the bullets for a patch tag with a single fix). Hold the draft in chat as a fenced code block.
 
