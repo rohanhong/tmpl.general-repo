@@ -24,13 +24,13 @@ Run every command in this skill through the `Bash` tool; the redirections used a
 
 2. **Gather state.** First batch, run in parallel:
    * `git status --short` (working-tree state).
-   * `git fetch origin <branch>` (refresh the remote ref). An exit 128 with `couldn't find remote ref` is NOT an error here: it is the first-push signal. Record it as such and skip the two `git log` range reads below (with no `origin/<branch>` ref they exit 128 and print nothing). An exit with `'origin' does not appear to be a git repository` means the repo has no origin remote: suggest `git remote add origin <url>` (user-run) and STOP. Both transports are fully supported; recommend whichever the machine is already set up for instead of holding a fixed preference. Probe both in parallel: `git config --get credential.helper` (a `manager` hit means the HTTPS form authenticates through the existing credential manager) and `ssh -o BatchMode=yes -o ConnectTimeout=5 -T git@github.com 2>&1` (a `successfully authenticated` greeting means the SSH form is ready; `Host key verification failed` or `Permission denied` means it is not, and the probe fails fast without prompting). Exactly one ready: recommend that form. Both ready: either works, let the user pick (SSH needs no browser or token prompts and suits headless use; HTTPS rides port 443 and needs no key management). Neither: HTTPS is the lower-setup path on Windows (Git for Windows ships the credential manager), and a locally-created repo can also be published from GitHub Desktop (Add local repository, then Publish), which wires an HTTPS origin automatically. Any other non-zero exit (network, auth, proxy): surface stderr verbatim and STOP.
+   * `git fetch origin <branch>` (refresh the remote ref). An exit 128 with `couldn't find remote ref` is NOT an error here: the branch is absent on origin, either never pushed (first push) or deleted there after an earlier push (a merged PR with auto-delete, or a teammate's cleanup). Tell the two apart with `git rev-parse --verify --quiet origin/<branch>`: a hit after that failed fetch is a STALE remote-tracking ref (a failed fetch never prunes), and it no longer describes anything on the server. Record both shapes as the first-push case and skip the two `git log` range reads below; without the ref they exit 128 and print nothing, and against a stale ref the about-to-land list comes back empty and step 5 would wrongly report the remote as up to date. An exit with `'origin' does not appear to be a git repository` means the repo has no origin remote: suggest `git remote add origin <url>` (user-run) and STOP. Both transports are fully supported; recommend whichever the machine is already set up for instead of holding a fixed preference. Probe both in parallel: `git config --get credential.helper` (a `manager` hit means the HTTPS form authenticates through the existing credential manager) and `ssh -o BatchMode=yes -o ConnectTimeout=5 -T git@github.com 2>&1` (a `successfully authenticated` greeting means the SSH form is ready; `Host key verification failed` or `Permission denied` means it is not, and the probe fails fast without prompting). Exactly one ready: recommend that form. Both ready: either works, let the user pick (SSH needs no browser or token prompts and suits headless use; HTTPS rides port 443 and needs no key management). Neither: HTTPS is the lower-setup path on Windows (Git for Windows ships the credential manager), and a locally-created repo can also be published from GitHub Desktop (Add local repository, then Publish), which wires an HTTPS origin automatically. Any other non-zero exit (network, auth, proxy): surface stderr verbatim and STOP.
 
-   Then, when `origin/<branch>` exists after the fetch, run in parallel:
+   Then, when the fetch succeeded (so `origin/<branch>` is current), run in parallel:
    * `git log origin/<branch>..<branch> --oneline 2>/dev/null` (commits about to land).
    * `git log <branch>..origin/<branch> --oneline 2>/dev/null` (remote-only commits; non-empty means non-fast-forward).
 
-   In the first-push case, produce the about-to-land list with `git log <branch> --oneline` instead, capped at 20 lines with an overflow count; there is nothing remote-only to check.
+   In the first-push case, produce the about-to-land list with `git log <branch> --oneline` instead, capped at 20 lines with an overflow count; there is nothing remote-only to check. With a stale ref, add one line to the step-7 plan: `origin/<branch>` is stale, the remote branch is gone, and this push re-creates it (the push refreshes the ref; `/git-fetch` prunes stale refs in bulk). When the branch vanished because its PR merged, re-creating it is usually not what the user wants: say so, and point at `/git-branch-delete` for the local leftover.
 
    If `<branch>` does not exist locally the `git log` calls error out; surface that verbatim and stop.
 
@@ -54,16 +54,16 @@ Run every command in this skill through the `Bash` tool; the redirections used a
    * `git log origin/<branch>..<branch>` empty (no unpublished local commits): `/git-pull <branch>` fast-forwards cleanly; re-run this skill afterwards.
    * Both lists non-empty (diverged): hand off to `/git-merge` with source=`origin/<branch>`, target=`<branch>`; its step 2 owns any checkout behind its own gate. Re-run this skill afterwards.
 
-5. **Refuse when nothing to push.** If the target has an upstream and `git log origin/<branch>..<branch>` is empty, tell the user the remote is already up to date and stop.
+5. **Refuse when nothing to push.** If the step-2 fetch succeeded and `git log origin/<branch>..<branch>` is empty, tell the user the remote is already up to date and stop. This never applies to the first-push case, stale ref included: an upstream configured on the local branch says nothing about whether the remote branch still exists.
 
 6. **Handle dirty tree.**
    * Current HEAD equals the target AND `git status --short` non-empty: warn that uncommitted changes will NOT be included, and offer `git-commit` first.
    * Current HEAD differs from the target: note in the plan output that uncommitted changes on the current HEAD are not part of this push, and proceed.
 
 7. **Show the plan and confirm.** Display the commits about to land (the step-2 about-to-land list; on first push that is the capped `git log <branch> --oneline`, which MUST render non-empty) and the exact command, then ask via `AskUserQuestion` (**push** / **abort**). A "push" / "yes push" / "go ahead" typed in the current turn counts as confirmation; ambiguous replies do not.
-   * **No upstream, current HEAD == target**: `git push -u origin <branch>` (sets tracking on first push).
-   * **No upstream, current HEAD != target**: `git push origin <branch>:<branch>`; afterward advise `git branch --set-upstream-to=origin/<branch> <branch>` if they want tracking on the local ref.
-   * **Has upstream, fast-forward**: `git push origin <branch>`.
+   * **First push (never pushed, or re-publish after a remote delete), current HEAD == target**: `git push -u origin <branch>` (sets or refreshes tracking).
+   * **First push, current HEAD != target**: `git push origin <branch>:<branch>`; afterward advise `git branch --set-upstream-to=origin/<branch> <branch>` if they want tracking on the local ref.
+   * **Remote branch present, fast-forward**: `git push origin <branch>`.
 
 8. **Run the push.** Execute the command exactly as displayed. Capture output verbatim.
 
