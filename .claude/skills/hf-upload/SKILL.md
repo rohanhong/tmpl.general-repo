@@ -35,6 +35,8 @@ The skill also needs three concrete inputs, from explicit prior context or `AskU
 
 2. **Enumerate the operation set.** Apply the layout convention to construct each `path_in_repo`, then list every file that will be touched, one bullet per planned op, as `add <local-path> -> <path_in_repo>`, `replace <path_in_repo> with <local-path>`, `delete <path_in_repo>`, `copy <src_path_in_repo> -> <path_in_repo>`, or `rename <old_path_in_repo> -> <new_path_in_repo>`. Show the list inline as a fenced code block. Keep multi-op uploads in one list so the user reviews the entire atomic commit at once.
 
+   `copy` and `rename` depend on whether the source is LFS-stored, because `CommitOperationCopy` works on LFS files only (see the operation-patterns table). Probe before rendering: `api.get_paths_info("<repo_id>", ["<src_path_in_repo>"], repo_type="<repo_type>")` returns a `RepoFile` whose `.lfs` is non-`None` for an LFS-stored file. Under each `copy` or `rename` bullet, show the expansion step 6 will send (`copy` + `delete` for LFS, `delete` + `add` otherwise) so the delete it implies is visible in the gate. A non-LFS `rename` needs the file bytes locally: when there is no local copy, fetch it first with `hf download <repo_id> <old_path_in_repo> --repo-type <repo_type> --local-dir <dir>`; a non-LFS `copy` is the same `add` from those bytes.
+
 3. **If a consumer manifest will pin this upload, plan sha256 capture** (`sha256sum <local-path>` through the `Bash` tool; PowerShell's equivalent is `Get-FileHash -Algorithm SHA256 <local-path>`). Otherwise skip. The hash is needed for the manifest, not for the upload, so the timing is a trade-off:
    * **Default (files under ~1 GB)**: compute now, so the hash appears in the step-5 gate render and the user can spot drift between intent and actual bytes.
    * **Large-file path (multi-GB weights the user may abort on)**: defer sha256 to after step-5 approval and before step 6. Document the deferral inline so the step-8 follow-up knows to compute then.
@@ -45,10 +47,10 @@ The skill also needs three concrete inputs, from explicit prior context or `AskU
    * **upload**: proceed to step 6 with the listed ops and the drafted message.
    * **edit**: apply the user's free-text changes (drop an op, change a `path_in_repo`, swap a local path, rewrite the message), re-render, re-ask. Loop until approved or aborted.
    * **abort**: STOP. Nothing is uploaded.
-   * If the list contains any `CommitOperationDelete`, prepend a single-line WARNING above the rendered list naming each deletion target.
+   * If the list contains any `CommitOperationDelete` (a `delete` op, or the old path of a `rename`), prepend a single-line WARNING above the rendered list naming each deletion target.
    * A bare "upload" / "yes upload" / "go ahead" typed in the current turn counts as confirmation; ambiguous replies do not.
 
-6. **Run `create_commit`** with the Reference recipe, `operations` matching the approved step-2 list verbatim and `commit_message` substituting the approved step-4 draft verbatim. One `CommitOperationAdd` per add or replace, one `CommitOperationDelete` per delete, all in the same `operations` list.
+6. **Run `create_commit`** with the Reference recipe, `operations` matching the approved step-2 list verbatim and `commit_message` substituting the approved step-4 draft verbatim. Map every op type: one `CommitOperationAdd` per add or replace, one `CommitOperationDelete` per delete, one `CommitOperationCopy` per copy of an LFS-stored source, and for each rename the pair from the operation-patterns table (`CommitOperationCopy` + `CommitOperationDelete` for an LFS-stored file, `CommitOperationDelete` + `CommitOperationAdd` from the local bytes otherwise), all in the same `operations` list.
 
 7. **Capture `info.oid` and `info.commit_url`.** The OID is the 40-character HF commit SHA; the URL is the human-clickable commit page.
 
@@ -90,7 +92,7 @@ Behaviours to know:
 | Add or replace (any N) | `[CommitOperationAdd(...), ...]`; an existing `path_in_repo` means replace, a new path means add |
 | Delete | `[CommitOperationDelete(path_in_repo=...)]` |
 | Rename an LFS-stored file | `[CommitOperationCopy(src_path_in_repo=old, path_in_repo=new), CommitOperationDelete(old)]` in one list; server-side, multi-GB weights are not re-uploaded |
-| Rename a non-LFS file | `[CommitOperationDelete(old), CommitOperationAdd(new, local)]` in one list; `CommitOperationCopy` only works on LFS-stored files |
+| Rename a non-LFS file | `[CommitOperationDelete(old), CommitOperationAdd(new, local)]` in one list; `CommitOperationCopy` only works on LFS-stored files, so probe with `get_paths_info` per step 2 and fetch the bytes locally first |
 | Mixed atomic release | freely mix all three op types in the same list |
 
 `path_in_repo` is always required.
@@ -158,7 +160,7 @@ All `HfHubHTTPError` instances expose `.response.status_code` and a body; surfac
 # Hard rules
 
 * NEVER invent `repo_id`, `path_in_repo`, or local paths. Ask via `AskUserQuestion` when unclear.
-* NEVER skip the step 5 `AskUserQuestion` gate. The atomic `create_commit` is the irreversible action this skill produces. With any `CommitOperationDelete` present, the WARNING line MUST name each deletion target verbatim.
+* NEVER skip the step 5 `AskUserQuestion` gate. The atomic `create_commit` is the irreversible action this skill produces. With any `CommitOperationDelete` present, a rename's old path included, the WARNING line MUST name each deletion target verbatim.
 * NEVER write `commit_message` to a file on disk. It is held inline in chat and flows into `create_commit` via its Python kwarg only, mirroring the no-file discipline of `git-commit` and `git-merge`.
 * NEVER run the commit before `hf auth whoami --format agent` returns a valid `user=...` line.
 * NEVER display, log, or persist the HF token in chat, scratch files, or commit messages. It lives only at `~/.cache/huggingface/token` or in CI secret stores.
