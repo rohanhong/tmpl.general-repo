@@ -31,6 +31,7 @@ Run every command in this skill through the `Bash` tool; the redirections used a
 
 2. **Gather state.** Run in parallel:
    * `git symbolic-ref --short -q HEAD` (current branch; empty output means detached)
+   * `git rev-parse --verify --quiet HEAD` (empty output means the repository has no commits yet; consumed by step 6)
    * `git branch --list` (existing local branches; avoid name collisions)
    * `git status --short` (dirty check consumed by step 6)
 
@@ -58,9 +59,13 @@ Run every command in this skill through the `Bash` tool; the redirections used a
    * No spaces, underscores, uppercase, accents, or non-ASCII.
    * Total length 60 characters or fewer.
 
-6. **Verify the base.** Confirm it exists locally (`git rev-parse --verify <base>`).
+6. **Verify the base.** Confirm it exists locally (`git rev-parse --verify --quiet <base>`). When it does not, tell the two causes apart with the step-2 `HEAD` probe; they need different answers.
 
-   **Unborn stop.** On a zero-commit repository (`git symbolic-ref` names a branch but `git rev-parse --verify <base>` resolves nothing), STOP and route to `/git-commit` for the repository's first commit. Two tested reasons: no base can resolve, so `git checkout -b <name> <base>` is fatal; and the no-base form `git checkout -b <name>` "succeeds" by moving the unborn symref, which makes the original trunk cease to exist. The bootstrap commit lands on the trunk via `git-commit`'s explicit opt-in; branches come after it.
+   **Unborn stop.** On a zero-commit repository (`git symbolic-ref` names a branch but `git rev-parse --verify --quiet HEAD` resolves nothing), STOP and route to `/git-commit` for the repository's first commit. Two tested reasons: no base can resolve, so `git checkout -b <name> <base>` is fatal; and the no-base form `git checkout -b <name>` "succeeds" by moving the unborn symref, which makes the original trunk cease to exist. The bootstrap commit lands on the trunk via `git-commit`'s explicit opt-in; branches come after it.
+
+   **Missing base.** `HEAD` resolves but `<base>` does not: the repository has commits and only the base branch is absent locally (typical: a clone that never checked out `develop`, or the `git-flow` default applied to a repo that only has `main`). This is NOT an empty repository; do not route to `/git-commit`. STOP, report which ref is missing, then:
+   * `git rev-parse --verify --quiet origin/<base>` resolves: the base exists on origin only. Render `git branch --track <base> origin/<base>` for the user to run themselves (this skill never creates a protected name; see Hard rules), then re-run from step 1.
+   * It does not resolve either: the declared or assumed workflow names a base this repo does not have. Suggest naming the base explicitly in the request (for example "branch off main") or fixing the `Workflow:` line in `.gitmessage` (`/git-commit` step 3a owns recording it).
    * **HEAD already equals base**: the working tree is preserved across branch creation regardless of dirty state; no extra prompt is needed.
    * **HEAD differs from base AND `git status --short` is non-empty**: `git checkout <base>` would either carry the uncommitted edits onto the base branch (when `<base>` does not modify the same paths) or refuse outright (when it does). Both are bad surprises, so ask via `AskUserQuestion` with exactly two options:
      * **commit-first (Recommended)**: STOP and hand off to `/git-commit` so the pending edits land on the current branch; re-run this skill from step 1 afterwards.
