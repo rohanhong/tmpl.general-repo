@@ -16,7 +16,7 @@ confirmation gates.
 | `LICENSE` | MIT license covering the template files |
 | `.claude/skills/git-*` | Branch, commit, fetch, pull, push, merge, tag, and delete skills |
 | `.claude/skills/repo-init` | One-time bootstrap of a fresh copy, with optional project scaffolding |
-| `.claude/skills/py-env-setup` | Dedicated conda env per repo with a root-level `environment.yml` as the spec |
+| `.claude/skills/py-env-setup` | Dedicated conda env per repo with a root-level `environment.yml` as the spec; a root-level `requirements.txt`, when present, is wired in through the spec |
 | `.claude/skills/hf-*` | Hugging Face Hub setup, upload, and download skills for large artifacts |
 
 ## 🚀 Quick Start
@@ -76,7 +76,7 @@ AI co-authors, and gate irreversible actions behind an explicit confirmation.
 | `git-tag` | Annotated version tags; optional per-tag push |
 | `git-branch-delete` | Remove merged branches locally and optionally on origin |
 | `repo-init` | First-session bootstrap; optional scaffolding (dirs, references/, CLAUDE.md, remote, identity) |
-| `py-env-setup` | Conda env creation or adoption, spec at the root `environment.yml` |
+| `py-env-setup` | Conda env creation or adoption, spec at the root `environment.yml`, pip deps via `requirements.txt` when present |
 | `hf-setup` | HF Hub account, repo, token, and manifest onboarding |
 | `hf-upload` | One atomic HF commit; returns the SHA for manifest pinning |
 | `hf-download` | Pinned-revision downloads with sha256 verification |
