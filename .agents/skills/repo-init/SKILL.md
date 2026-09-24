@@ -1,26 +1,27 @@
 ---
 name: repo-init
 description: >-
-  Bootstrap a repository created from this template: verify the template files, run git init or detach a direct clone from the template's history and remote, point git config commit.template at .gitmessage, ask-then-record the workflow and branch-naming variants, then optionally scaffold the project (common directories, a references/ area for read-only external repos, the AGENTS.md project section, archive excludes, origin remote wiring, README/LICENSE identity, a Python env via py-env-setup). Use for "set up this repo", "initialize from the template", "apply the template", or a first session in a fresh copy. Read-only probing first; every mutation has its own gate.
+  Bootstrap a repository created from this template: verify the template files, run git init or detach a template clone, wire commit.template to .gitmessage, record the workflow and branch-naming variants, optionally scaffold (common directories, a references/ area, the AGENTS.md project section, archive excludes, origin remote, a Python env via py-env-setup), and hand template documents and LICENSE to repo-docs. Use for "set up this repo", "initialize from the template", or a first session in a fresh copy. Every mutation is gated.
 compatibility: Requires git 2.22 or later and a POSIX shell (Git Bash on Windows).
 ---
 
 # Goal
 
-Take a fresh copy of this template from "files on disk" to "configured repository": a git repo exists, `git commit` loads `.gitmessage` as its template, the `Workflow:` and `Adopted:` lines reflect decisions the user actually made, and any project scaffolding the user opted into is in place. A consumer copy leaves this skill with no template residue: no template history, no template remote, and no template identity in README or LICENSE.
+Take a fresh copy of this template from "files on disk" to "configured repository": a git repo exists, `git commit` loads `.gitmessage` as its template, the `Workflow:` and `Adopted:` lines reflect decisions the user actually made, and any project scaffolding the user opted into is in place. A consumer copy leaves this skill with no template residue: no template history, no template remote, and no template identity in README, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, their translations, header images, or LICENSE.
 
 # When NOT to use
 
 * The repo is already configured (step 1 reports all green) and the user wants no scaffolding: report that and stop.
 * The user wants to make a commit, branch, or push: the matching `git-*` skill owns each of those; suggest it.
 * The user only wants a Python environment: suggest `py-env-setup`.
+* The user only wants a README, license, or community file written or updated: suggest `repo-docs`.
 * The template files themselves are missing (no `.gitmessage` at the root): this skill configures, it does not fetch. Tell the user to copy the template files in first (or create the repo from the template again) and stop.
 
 # Procedure
 
 Terms such as choice question, independent reads, invoke, and suggest follow AGENTS.md (Skill authoring); in a non-interactive session every gate ends this skill.
 
-Run every command in this skill in a POSIX shell. Reference files live under `references/` (paths relative to the skill root); read each at the step that names it: `references/adapter-links.md` (steps 1 and 2), `references/references-area.md` (6c), `references/origin-remote.md` (6e), and `references/rationale.md` when the user asks why the skill works this way.
+Run every command in this skill in a POSIX shell. Reference files live under `references/` in the skill directory (AGENTS.md, Skill authoring); read each at the step that names it: `references/adapter-links.md` (steps 1 and 2), `references/references-area.md` (6c), `references/origin-remote.md` (6e), and `references/rationale.md` when the user asks why the skill works this way.
 
 1. **Probe, read-only.** Run these independent reads:
    * `ls .gitmessage .gitattributes .gitignore AGENTS.md 2>/dev/null` and `ls .agents/skills 2>/dev/null` (template files present?).
@@ -116,18 +117,18 @@ Run every command in this skill in a POSIX shell. Reference files live under `re
 
 4. **Resolve and record the workflow variant.** Read the `Workflow:` line in `.gitmessage`.
    * The template ships `Workflow: <not recorded>` (skills then assume `git-flow`). Whatever the line holds, ask with a choice question which variant applies (`git-flow` / `github-flow` / `trunk-solo`; none recommended; tradeoffs from `.gitmessage`), unless the user already stated it in this conversation.
-   * Then ask **record** / **skip**: on **record**, update the `Workflow:` line as an in-place edit so downstream skills (`git-commit`, `git-push`, `git-merge`, `git-branch-create`, `git-branch-delete`, `git-fetch`) read the decided value. On **skip**, warn that an undeclared variant makes those skills assume `git-flow`, the strictest.
+   * Then ask **record** / **skip**: after a step-2 **template itself** answer, mark **skip** as recommended and say that a recorded line ships to every consumer of the template. On **record**, update the `Workflow:` line as an in-place edit so downstream skills (`git-commit`, `git-push`, `git-merge`, `git-branch-create`, `git-branch-delete`, `git-fetch`) read the decided value. On **skip**, warn that an undeclared variant makes those skills assume `git-flow`, the strictest.
 
-5. **Resolve the branch-naming variant.** Ask with a choice question which of `.gitmessage`'s "Branch Naming" variants the repo adopts (A: issue-id, B: scope, C: plain short-desc), unless already stated. Record the answer by updating the section's `Adopted:` line as an in-place edit (the template ships it as `Adopted: <not recorded>`; set it to, for example, `Adopted: Variant B`), behind its own **record** / **skip** gate. `git-branch-create` step 4 and `git-commit` step 3e read this line instead of guessing.
+5. **Resolve the branch-naming variant.** Ask with a choice question which of `.gitmessage`'s "Branch Naming" variants the repo adopts (A: issue-id, B: scope, C: plain short-desc), unless already stated. Record the answer by updating the section's `Adopted:` line as an in-place edit (the template ships it as `Adopted: <not recorded>`; set it to, for example, `Adopted: Variant B`), behind its own **record** / **skip** gate, with the same **template itself** recommendation as step 4. `git-branch-create` step 4 and `git-commit` step 3e read this line instead of guessing.
 
 6. **Optional scaffolding.** Two layers: 6a picks WHAT to scaffold (design), 6b to 6g each render their exact content or command and gate it (execution). Skip 6a entirely when the user already named what they want in the current conversation.
 
    a. **Select scope** with TWO multi-select choice questions asked together (a choice question tops out at 4 options, so the six items split by kind; offer only items not already present):
-      * Question "files and directories": **common directories** (docs/, config/, scripts/), **references area** (read-only external repos, git-ignored), **project instructions** (fill the Project and Commands sections of `AGENTS.md`; offered while its placeholders remain), **archive excludes** (enable the `.gitattributes` export-ignore lines; consumer copies only, so not when step 2 resolved to **template itself** or the user has said this repo is the template, and only while step 1 reports `archive excludes: off`).
+      * Question "files and directories": **common directories** (config/, scripts/, and docs/ when absent), **references area** (read-only external repos, git-ignored), **project instructions** (fill the Project and Commands sections of `AGENTS.md`; offered while its placeholders remain), **archive excludes** (enable the `.gitattributes` export-ignore lines; consumer copies only, so not when step 2 resolved to **template itself** or the user has said this repo is the template, and only while step 1 reports `archive excludes: off`).
       * Question "integrations": **origin remote** (only when `origin` is absent; see step 2), **python environment** (invokes `py-env-setup`).
       Nothing selected in either question means step 6 is done; continue at step 7.
 
-   b. **Common directories.** Ask with a multi-select choice question which of `docs/`, `config/`, `scripts/` to create (the user can type additional names). git does not track empty directories, so each created directory gets a `.gitkeep` placeholder. Render the resulting `mkdir` plus `.gitkeep` plan inline; the multi-select answer is the gate, since it names exactly what will be created. Skip any directory that already exists.
+   b. **Common directories.** Ask with a multi-select choice question which of `docs/`, `config/`, `scripts/` to create, offering only those that do not exist yet (the template ships `docs/` for its translations; the user can type additional names). git does not track empty directories, so each created directory gets a `.gitkeep` placeholder. Render the resulting `mkdir` plus `.gitkeep` plan inline; the multi-select answer is the gate, since it names exactly what will be created. Skip any directory that already exists.
 
    c. **References area.** Render both new repo-root files inline (`references/README.md` and `references/.gitignore` at the repository root, exactly as given in this skill's own `references/references-area.md`), then ask **create** / **abort**. The root `.gitignore` is NOT touched.
 
@@ -143,9 +144,7 @@ Run every command in this skill in a POSIX shell. Reference files live under `re
       ```
       On **enable**, run it and verify that `git check-attr export-ignore -- .gitmessage` reports `set`; the step-9 checklist then also checks every adapter directory.
 
-7. **Project identity (consumer copies only).** When README.md still carries the template's own title (`General Repository Template`) or LICENSE still carries the template author's copyright line, this copy is presenting itself as the template rather than as the user's project. Offer, each behind its own gate:
-   * **README rewrite**: draft a project README skeleton (title from the project name, one-line description, empty Usage section), render it fully, ask **rewrite** / **keep**. On **rewrite**, replace the file.
-   * **LICENSE holder**: show the current copyright line and ask whether to update the holder name (free text); on confirmation, change that line as an in-place edit. Only the holder line changes; swapping the license itself is out of scope, so point to choosealicense.com and stop at the reminder.
+7. **Project identity (consumer copies only).** When README, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, a translation in `docs/i18n/`, or a header image in `.github/assets/` still carries the template's own title (`General Repository Template`) or distribution name (`tmpl.general-repo`), this copy is presenting itself as the template rather than as the user's project; its LICENSE then usually still carries the template author's copyright line too (show that line). Name the files found, then ask **rewrite** / **keep**. On **rewrite**, invoke `repo-docs`, which owns these documents, the license choice and holder, the translations, and the header images under its own gates; do not duplicate its questions here.
    Skip this step only when the user says this repo IS the template itself (including a step-2 **template itself** answer). A working-directory basename of `tmpl.general-repo` is NOT sufficient evidence, because a default `git clone` keeps that name; when step 2 detached a template clone, always treat the repo as a consumer project, and when in doubt, ask.
 
 8. **Optional first commit.** When step 2 created a brand-new repo, or steps 6 to 7 created new files, ask with a choice question (**commit** / **skip**) whether to land the pending files; on **commit**, invoke `git-commit`.
