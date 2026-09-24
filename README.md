@@ -1,72 +1,114 @@
-# 🧰 General Repository Template
+<div align="center">
 
-A general-purpose starting point for new repositories, shipped as
-`tmpl.general-repo`: portable git hygiene files plus a family of agent
-skills that run the git workflow, project bootstrap and scaffolding, Python
-environment setup, and Hugging Face Hub artifact hosting behind explicit
-confirmation gates. Instructions and skills are tool-neutral: one canonical
-copy serves any AI agent tool, and tools that do not read the open-convention
-locations get thin adapters instead of copies.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/banner-light.svg">
+  <img alt="tmpl.general-repo" src=".github/assets/banner-light.svg" width="640">
+</picture>
 
-## 📦 Contents
+<h1>🧰 General Repository Template</h1>
 
-| Path | Purpose |
-|---|---|
-| `.gitattributes` | LF normalization, language-aware diff headers, binary markers, symlink types, and `git archive` excludes (shipped commented out so source downloads of the template keep its files; `repo-init` enables them in a consumer repo) |
-| `.gitignore` | OS, editor, language, and infrastructure ignore rules; add project rules under `# Project-local` |
-| `.gitmessage` | Commit message format, workflow variants, branch types and naming, protected branches, tags |
-| `LICENSE` | MIT license covering the template files |
-| `AGENTS.md` | Single source of agent instructions; its Layout section defines the canonical locations and the adapter rule |
-| Tool adapters | Root instruction files that only import `AGENTS.md`, and `.<tool>/skills` symbolic links to `.agents/skills`, for tools that do not read the canonical locations (shipped for Claude Code; see AGENTS.md, Layout, to add one for another tool such as Gemini CLI or Kiro) |
-| `.agents/skills/git-*` | Branch, commit, fetch, pull, push, merge, tag, and delete skills |
-| `.agents/skills/repo-init` | One-time bootstrap of a fresh copy, with optional project scaffolding |
-| `.agents/skills/py-env-setup` | Dedicated conda env per repo with a root-level `environment.yml` as the spec; a root-level `requirements.txt`, when present, is wired in through the spec |
-| `.agents/skills/hf-*` | Hugging Face Hub setup, upload, and download skills for large artifacts |
+<p><b>Git hygiene, agent instructions, and gated agent skills, ready for any new repository.</b></p>
+
+<p>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/rohanhong/tmpl.general-repo"></a>
+  <a href="https://github.com/rohanhong/tmpl.general-repo/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/rohanhong/tmpl.general-repo"></a>
+  <a href="https://github.com/rohanhong/tmpl.general-repo/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/rohanhong/tmpl.general-repo?style=flat"></a>
+  <a href="https://github.com/rohanhong/tmpl.general-repo/generate"><img alt="Use this template" src="https://img.shields.io/badge/use%20this-template-2ea44f?logo=github"></a>
+  <a href="https://agents.md"><img alt="AGENTS.md" src="https://img.shields.io/badge/AGENTS.md-ready-24292f"></a>
+  <a href="https://agentskills.io"><img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-open%20format-8250df"></a>
+  <!-- Reserved badges: uncomment when the service exists.
+  <a href="https://github.com/rohanhong/tmpl.general-repo/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/rohanhong/tmpl.general-repo/ci.yml?branch=main"></a>
+  <a href="https://github.com/rohanhong/tmpl.general-repo/releases"><img alt="Release" src="https://img.shields.io/github/v/release/rohanhong/tmpl.general-repo"></a>
+  -->
+</p>
+
+<p>🌐 <b>English</b> | <a href="docs/i18n/README.zh-CN.md">简体中文</a></p>
+
+</div>
+
+A starting point for new repositories. It ships portable git configuration
+and one tool-neutral set of agent instructions (`AGENTS.md`) and skills
+(`.agents/skills`) that any AI coding agent can use. The skills run the git
+workflow, project bootstrap, project documents, Python environments, and Hugging
+Face Hub hosting, and they stop for your confirmation before anything that is
+hard to undo.
+
+## ✨ Highlights
+
+- 🔧 **Git hygiene out of the box**: line endings, diff drivers, ignore rules,
+  and a commit convention with three workflow variants.
+- 🤖 **One source for every agent tool**: instructions and skills live in open
+  locations; other tools get thin adapters, never copies.
+- 🛡️ **Safe by default**: skills gate irreversible actions, never rewrite
+  history, and add no AI co-authors.
+- 🌱 **Grows with the project**: `repo-init` bootstraps a fresh copy, and
+  `repo-docs` writes a README and community files like these.
 
 ## 🚀 Quick Start
 
-The skills need git 2.22 or later (they use `git branch --show-current`) and
-a POSIX shell (Git Bash on Windows).
+> [!NOTE]
+> The skills need git 2.22 or later and a POSIX shell (Git Bash on Windows).
 
-1. Copy the template files into your new project, create the repo from this
-   template on your forge, or clone the template directly. A direct clone
-   keeps the template's own history and origin remote; `repo-init` detects
-   that and offers to detach.
-2. In an agent session, invoke the `repo-init` skill (for example
-   `/repo-init` in tools with slash commands, or by asking for it by name).
-   It verifies the files, runs `git init` when needed, restores skills
-   adapter links that a copy turned into plain files, wires
-   `git config commit.template .gitmessage`, and asks-then-records the
-   workflow variant and branch-naming variant in `.gitmessage`.
-3. Without an agent, the manual equivalent is:
+1. Create your repository with **Use this template**, or copy or clone this
+   one. A clone keeps the template's history; `repo-init` offers to detach it.
+2. In an agent session, run the `repo-init` skill (for example `/repo-init`).
+   It wires up git, records your workflow choices, offers optional
+   scaffolding, and offers to have `repo-docs` rewrite the template's README,
+   community files, and license for your project.
 
-   ```bash
-   # cloned copies first: rm -rf .git   (drops the template's history and
-   # remote; or keep them and run `git remote rename origin template`)
-   git init -b main   # git 2.28+; older git: git init && git symbolic-ref HEAD refs/heads/main
-   git config commit.template .gitmessage
-   # then edit .gitmessage: set the `Workflow:` line and the `Adopted:` line
-   # optional: enable the archive excludes in .gitattributes
-   sed -E 's/^# ([^ ]+ +export-ignore)$/\1/' .gitattributes > .gitattributes.tmp &&
-     mv .gitattributes.tmp .gitattributes
-   # skills adapters that arrived as plain files: register them as links
-   # (runs under sh, so zsh's error on a glob that matches nothing does
-   # not apply)
-   sh <<'EOF'
-   for f in .[!.]*/skills; do
-     [ -f "$f" ] && [ ! -L "$f" ] && [ "$(grep -c '' "$f")" -eq 1 ] || continue
-     case "$(tr -d '\r\n' < "$f")" in *.agents/skills) ;; *) continue;; esac
-     tr -d '\r\n' < "$f" > "$f.tmp" && mv "$f.tmp" "$f"
-     git update-index --add --cacheinfo \
-       "120000,$(tr -d '\r\n' < "$f" | git hash-object -w --stdin),$f"
-   done
-   EOF
-   ```
+<details>
+<summary>Manual setup without an agent</summary>
+
+```bash
+# cloned copies first: rm -rf .git   (drops the template's history and
+# remote; or keep them and run `git remote rename origin template`)
+git init -b main   # git 2.28+; older git: git init && git symbolic-ref HEAD refs/heads/main
+git config commit.template .gitmessage
+# then edit .gitmessage: set the `Workflow:` line and the `Adopted:` line
+# optional: enable the archive excludes in .gitattributes
+sed -E 's/^# ([^ ]+ +export-ignore)$/\1/' .gitattributes > .gitattributes.tmp &&
+  mv .gitattributes.tmp .gitattributes
+# skills adapters that arrived as plain files: register them as links
+# (runs under sh, so zsh's error on a glob that matches nothing does
+# not apply)
+sh <<'EOF'
+for f in .[!.]*/skills; do
+  [ -f "$f" ] && [ ! -L "$f" ] && [ "$(grep -c '' "$f")" -eq 1 ] || continue
+  case "$(tr -d '\r\n' < "$f")" in *.agents/skills) ;; *) continue;; esac
+  tr -d '\r\n' < "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+  git update-index --add --cacheinfo \
+    "120000,$(tr -d '\r\n' < "$f" | git hash-object -w --stdin),$f"
+done
+EOF
+```
+
+</details>
+
+## 📦 What's Inside
+
+| Path | Purpose |
+|---|---|
+| `.gitattributes` | LF normalization, diff drivers, binary markers, archive excludes (off until `repo-init` enables them) |
+| `.gitignore` | OS, editor, language, and infrastructure rules; add yours under `# Project-local` |
+| `.gitmessage` | Commit format, workflow variants, branch naming, tags |
+| `AGENTS.md` | Agent instructions, the canonical layout, and the adapter rule |
+| `.agents/skills/` | The skills below |
+| `CLAUDE.md`, `.claude/skills` | Claude Code adapters: an `@AGENTS.md` import and a link to `.agents/skills` |
+| `.github/assets/` | README images |
+| `docs/i18n/` | Translations of the README and the Contributing guide |
+| `LICENSE` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `SECURITY.md` | Legal and community files; `repo-docs` rewrites them for your project |
+
+| Group | Skills | What they do |
+|---|---|---|
+| 🌿 Git | `git-branch-create` `git-commit` `git-fetch` `git-pull` `git-merge` `git-push` `git-tag` `git-branch-delete` | Branch, commit, sync, merge, publish, and tag per `.gitmessage` |
+| 🏗️ Setup | `repo-init` `repo-docs` `py-env-setup` | Bootstrap a copy, write the README and community files, create a conda env |
+| 🤗 HF Hub | `hf-setup` `hf-upload` `hf-download` | Host large artifacts with pinned, verified revisions |
 
 ## 🔀 Workflow Variants
 
-`.gitmessage` is the normative source. One variant per repository, recorded on
-its `Workflow:` line:
+`.gitmessage` is the normative source; each repository records one variant on
+its `Workflow:` line.
 
 | Variant | Trunks | Protected | Intended for |
 |---|---|---|---|
@@ -74,77 +116,70 @@ its `Workflow:` line:
 | `github-flow` | `main` | `main`, `support/*` | Team repos, PR-based |
 | `trunk-solo` | `main` | none (rewrite still forbidden) | Single-maintainer repos |
 
-The template ships with `Workflow: <not recorded>`. Every skill treats an
-unrecognized value as undeclared and falls back to `git-flow`, the strictest
-variant, until a real choice is recorded (run the `repo-init` skill, or edit
-the line). The `Adopted:` branch-naming line has no strictest fallback: while
-it is unrecorded, `git-branch-create` infers the variant from existing
-branches and asks when they leave it ambiguous, and `git-commit` infers it the
-same way, then falls back to Variant C.
+The template ships the line unrecorded, so skills assume `git-flow`, the
+strictest, until you record a choice with `repo-init`. This template itself
+is maintained `trunk-solo` but keeps the line unrecorded; when working on it,
+answer **template itself** at the `repo-init` provenance question, then
+`trunk-solo`, and skip recording.
 
-This template repository itself is maintained trunk-solo, but the shipped line
-stays unrecorded on purpose so each consumer repo makes its own choice. When
-working on the template itself, answer **template itself** at the `repo-init`
-provenance question, then `trunk-solo`, and skip recording.
-
-## 🧩 Skill Family
-
-Each skill owns one operation and hands off to its neighbors by name. All of
-them draft messages inline (never to a file), refuse history rewrites, add no
-AI co-authors, and gate irreversible actions behind an explicit confirmation.
-
-| Skill | Owns |
-|---|---|
-| `git-branch-create` | Cut a named short-lived branch from the right base |
-| `git-commit` | Stage, draft per `.gitmessage`, confirm, commit via heredoc; mixed sets go through a batch plan drafted up front, approved in one bulk pass, committed consecutively |
-| `git-fetch` | Refresh remote state and report ahead/behind (no gate; read-only) |
-| `git-pull` | Fast-forward only; hands divergence to `git-merge` |
-| `git-merge` | `--no-ff` merge with a drafted merge commit |
-| `git-push` | Publish a branch; enforces the protected-branch set |
-| `git-tag` | Annotated version tags; optional per-tag push |
-| `git-branch-delete` | Remove merged branches locally and optionally on origin |
-| `repo-init` | First-session bootstrap; optional scaffolding (dirs, references/, AGENTS.md project section, remote, identity) |
-| `py-env-setup` | Conda env creation or adoption, spec at the root `environment.yml`, pip deps via `requirements.txt` when present |
-| `hf-setup` | HF Hub account, repo, token, and manifest onboarding |
-| `hf-upload` | One atomic HF commit; returns the SHA for manifest pinning |
-| `hf-download` | Pinned-revision downloads with sha256 verification |
-
-`.gitmessage` is normative for commit and merge messages;
-`.agents/skills/git-commit/references/message-spec.md` is the skills'
-detailed reading of it and defers to `.gitmessage` on any conflict.
-
-## 🔄 Updating Skills
-
-To pick up skill fixes from a newer template:
+## 🔄 Updating
 
 - **Kept the template history** (`repo-init` answer **keep history**, with
-  the template remote renamed to `template`): run `git fetch template`, then
-  invoke the `git-merge` skill with source `template/main`.
-- **Fresh start** (template history dropped): replace your `.agents/skills/`
-  directory with the one from a newer copy of the template rather than
-  copying over it, so files removed upstream disappear. Review the result
-  with `git status -- .agents/skills` (new and deleted files) and `git diff`
-  before committing, since local edits to a skill are lost. Also compare
-  AGENTS.md's Skill authoring section, and the `.gitattributes` and
-  `.gitmessage` layouts that `repo-init` relies on, with the newer template.
+  the template remote renamed to `template`): `git fetch template`, then run
+  `git-merge` with source `template/main`.
+- **Fresh start**: replace `.agents/skills/` with the newer template's copy,
+  then review `git status` and `git diff` before committing, since local
+  skill edits are lost. Also compare `AGENTS.md`, `.gitattributes`, and
+  `.gitmessage` with the newer template.
+- **README and community files**: run `repo-docs` again to bring them up
+  to the current layout.
 
-## 🖥️ Windows Note
+## 🪟 Windows
 
-Skills adapters are symbolic links, which need Developer Mode (Settings,
-System, For developers) or administrator rights. Before cloning, enable one
-of them and run `git config --global core.symlinks true` (or clone with
-`git clone -c core.symlinks=true <url>`); otherwise git writes each link as a
-plain text file and the tool reading it finds no skills. To repair an
-existing checkout, enable Developer Mode or use administrator rights, run
-`git config core.symlinks true` in it, then run `rm <link> && git checkout --
-<link>` for each broken link that `repo-init` reports. A copy of the template
-files (not a clone) made without symlink support carries the links as plain
-files; `repo-init` registers them as links before the first commit, or use
-the `git update-index` line from the manual steps above.
+> [!IMPORTANT]
+> Skills adapters are symbolic links. Enable Developer Mode (or use
+> administrator rights) and run `git config --global core.symlinks true`
+> before cloning; otherwise Claude Code and other tools that read only
+> `.claude/skills` find no skills. `repo-init` reports broken links and gives
+> the fix; AGENTS.md (Layout) has the details.
 
-The skills run their commands in a POSIX shell (Git Bash on Windows) because
-they use POSIX redirections and heredocs. An agent whose default shell is
-PowerShell runs each snippet through Git Bash, as AGENTS.md (Skill authoring,
-POSIX shell) describes. The one PowerShell exception is `py-env-setup`, which
-runs conda commands through PowerShell when conda is initialized only in the
-PowerShell profile.
+Agents whose default shell is PowerShell run each skill snippet through Git
+Bash, as AGENTS.md (Skill authoring) describes.
+
+## 📚 Documentation
+
+| Topic | Where |
+|---|---|
+| Agent instructions, layout, adapters, skill authoring | [`AGENTS.md`](AGENTS.md) |
+| Commit format, workflow variants, branch naming, tags | [`.gitmessage`](.gitmessage) |
+| Each skill's procedure and rules | [`.agents/skills/<name>/SKILL.md`](.agents/skills) |
+| Commit message reading used by the skills | [`message-spec.md`](.agents/skills/git-commit/references/message-spec.md) |
+
+## 🤝 Contributing
+
+Issues and pull requests are welcome. Read the [Contributing guide](CONTRIBUTING.md)
+for the workflow and change rules.
+
+## 🔗 Resources
+
+- [AGENTS.md](https://agents.md): the open format for agent instructions.
+- [Agent Skills](https://agentskills.io): the open format for skills.
+- [Conventional Commits](https://www.conventionalcommits.org): the basis of the commit format.
+- [Choose a License](https://choosealicense.com) and [Contributor Covenant](https://www.contributor-covenant.org): sources for the legal and community files.
+
+## ⚖️ Legal
+
+- **License**: [MIT](LICENSE)
+- **Code of Conduct**: [Contributor Covenant 3.0](CODE_OF_CONDUCT.md)
+- **Security**: report vulnerabilities privately per [SECURITY.md](SECURITY.md)
+<!-- - **Terms of Service**: [TERMS.md](TERMS.md) (add when the project runs a hosted service) -->
+
+## ⭐ Star History
+
+<a href="https://www.star-history.com/#rohanhong/tmpl.general-repo&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=rohanhong/tmpl.general-repo&type=Date&theme=dark">
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=rohanhong/tmpl.general-repo&type=Date">
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=rohanhong/tmpl.general-repo&type=Date" width="600">
+  </picture>
+</a>
