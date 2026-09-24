@@ -19,6 +19,13 @@ file is the single source of instructions; edit it, never an adapter file.
   the repository's commit and merge messages;
   `.agents/skills/git-commit/references/message-spec.md` is the skills'
   detailed reading of it and defers to `.gitmessage` on any conflict.
+- `README.md` and `CONTRIBUTING.md` are canonical English; each
+  translation (`docs/i18n/<NAME>.<locale>.md`) changes in the same change
+  set. The `repo-docs` skill owns the front-page documents (README,
+  CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, LICENSE, and when needed TERMS,
+  NOTICE, and COPYING), their translations, and
+  the header images in `.github/assets/`. README files may use emoji; README
+  and CONTRIBUTING files and their translations may use non-English text.
 
 ## Layout
 
@@ -46,6 +53,9 @@ The template ships two adapters, both for Claude Code:
   Code discovers skills only in `.claude/skills`, but several other tools read
   both `.agents/skills` and `.claude/skills`, so they may list each skill
   twice. Some of those tools offer a setting to ignore the Claude location.
+  Some tools read `.claude/skills` but not `.agents/skills` (Cline, for
+  example), so for them this link is the only way to the skills: when it is
+  broken (see the Windows notes below), those tools find no skills.
 
 Some tools need an adapter the template does not ship. For example, Gemini
 CLI reads `GEMINI.md` by default (an instruction adapter, or its setting for
@@ -159,6 +169,12 @@ Skills must run under any agent tool, so they follow these rules:
   - **in-place edit** / **write the file**: change part of a file while
     preserving the rest, versus create or replace a whole file.
   - **the agent**: whichever tool is executing the skill.
+  - **skill directory** (`<skill-dir>`): the absolute path of the directory
+    holding the running skill's SKILL.md. Paths such as `references/x.md` or
+    `scripts/x.sh` in a skill resolve against it, and `../<skill>/...`
+    reaches a sibling skill. When the tool does not show it, use
+    `<repository toplevel>/.agents/skills/<name>`. Quote it in commands,
+    since it may contain spaces.
   - **invoke `<skill>`**: the agent runs that skill now, under that skill's
     own gates, however the tool triggers skills.
   - **suggest `<skill>`**: name that skill to the user as a next step without

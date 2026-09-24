@@ -34,7 +34,7 @@ Seven phases, Phase 0 to Phase 6. Phase 0 is read-only probing plus user-driven 
   * Phase 6c: **patch** / **abort** per consumer file, only when the agent does the edit.
   * Phase 6d: **append** / **abort** against the existing `.gitignore` (as an in-place edit, never a wholesale rewrite).
 
-Reference files live under `references/` in this skill's directory; paths below are relative to the skill root. Read each at the phase that names it:
+Reference files live under `references/` in the skill directory (AGENTS.md, Skill authoring); paths below are relative to it. Read each at the phase that names it:
 
 * `references/prerequisites.md` at Phase 0: probe 3 output shape and the per-prerequisite install fixes.
 * `references/repo-design.md` at Phase 2, Phase 3, and Phase 5a: owner options, repo types, naming conventions, license and visibility options, creation details, in-repo layout.
