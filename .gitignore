@@ -37,7 +37,6 @@ Session.vim
 .env.*.local
 *.pem
 *.key
-*.crt
 *.p12
 *.pfx
 *.keystore
@@ -59,11 +58,11 @@ __pycache__/
 *.egg
 *.egg-info/
 dist/
-build/
+/build/
 .venv/
-venv/
-env/
-ENV/
+/venv/
+/env/
+/ENV/
 .pytest_cache/
 .coverage
 htmlcov/
@@ -116,12 +115,12 @@ hs_err_pid*
 # Go
 *.test
 *.prof
-vendor/
+/vendor/
 
 # Rust
 **/*.rs.bk
 
-# C# / .NET
+# C# / .NET (bin/ and obj/ stay unanchored: .NET emits them per project)
 [Bb]in/
 [Oo]bj/
 *.user
@@ -178,9 +177,9 @@ charts/*/*.tgz
 # ROS
 catkin_ws/*
 ros2_ws/
-devel/
-install/
-log/
+/devel/
+/install/
+/log/
 .catkin_workspace
 *.bag
 *.bag.active
