@@ -2,7 +2,7 @@
 #  Git Commit Message Template
 #  Project: <Project Name>
 #  Usage: Loaded by `git commit` once commit.template points
-#         here. Wire it up with `/repo-init`, or manually:
+#         here. Wire it up with the `repo-init` skill, or manually:
 #         git config commit.template .gitmessage
 # ============================================================
 #
@@ -101,12 +101,14 @@
 #   `develop`, and `support/*` in EVERY variant, including
 #   `trunk-solo` where those branches are otherwise open.
 #
-#   When the `Workflow:` line is absent or still reads
-#   `<not recorded>`, tooling assumes `git-flow` (the
-#   strictest variant) and asks which one applies; record the
-#   answer here so the question does not return. Tooling must not guess from history shape: a
-#   squash-merged PR flow and a direct-commit trunk produce
-#   the same linear topology.
+#   When the `Workflow:` line is absent or holds an
+#   unrecognized value (including `<not recorded>`), tooling
+#   assumes `git-flow` (the strictest variant); `git-commit`
+#   and `repo-init` also ask which one applies and offer to
+#   record the answer here so the question does not return.
+#   Tooling must not guess from history shape: a squash-merged
+#   PR flow and a direct-commit trunk produce the same linear
+#   topology.
 #
 # ------------------------------------------------------------
 # Branch Types
@@ -156,7 +158,10 @@
 #               Use when an issue tracker is the source of
 #               truth; the id keeps branches traceable.
 #               `<issue-id>` follows the tracker's native
-#               format (numeric id, or prefix plus numeric id).
+#               format (numeric id, or prefix plus numeric id),
+#               lowercased to satisfy the character rules below
+#               (for example `PROJ-123` becomes
+#               `feature/proj-123-short-desc`).
 #
 #   Variant B : <type>/<scope>/<short-desc>
 #               Use when work is organized by module or
@@ -168,7 +173,7 @@
 #               titles already carry the necessary context.
 #
 #   Record the adopted variant on the line below once decided
-#   (`/repo-init` maintains it; tooling reads it):
+#   (`repo-init` maintains it; tooling reads it):
 #   Adopted: <not recorded>
 #
 # ------------------------------------------------------------
