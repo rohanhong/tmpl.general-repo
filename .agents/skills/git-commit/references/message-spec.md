@@ -1,6 +1,6 @@
 # Commit message specification
 
-The single normative copy of the message rules for the skill family: `git-commit` applies the "Standard commit message" section, `git-merge` applies the "Merge commit message" section. Neither SKILL.md restates these rules, so there is no second copy to drift. `.gitmessage` at the repo root is the user-facing template for the same conventions; when the two disagree, fix the drift in the same change set.
+The skill family's detailed reading of the message rules in `.gitmessage` at the repo root. `.gitmessage` is normative: when the two disagree, follow `.gitmessage`, say so, and fix this file in the same change set. `git-commit` applies the "Standard commit message" section, `git-merge` applies the "Merge commit message" section; neither SKILL.md restates these rules, so there is no third copy to drift.
 
 ## Standard commit message (`git-commit`)
 
@@ -25,7 +25,7 @@ The single normative copy of the message rules for the skill family: `git-commit
 
 Same shape as the standard message; the only differences are the fixed header type and the theme-based body.
 
-* **Header (line 1)** in the form `merge(<scope>): integrate <source> into <target>`. Imperative mood, no trailing period, target 50 characters, hard limit 72. The type is literally `merge`; pick `<scope>` per `git-merge` step 8.
+* **Header (line 1)** in the form `merge(<scope>): integrate <source> into <target>`. Imperative mood, no trailing period, target 50 characters, hard limit 72. The type is literally `merge`; pick `<scope>` per `git-merge` step 8. When the full header would exceed 72 characters, shorten `<source>` to its `<short-desc>` (the last `/` segment, which under Variant A keeps the issue id; for example `feature/foo-bot/retry-on-timeout` becomes `retry-on-timeout`) and keep `<target>` in full; if it still exceeds 72, drop the optional `(<scope>)`, then cut the `<short-desc>` to its leading words (keeping any issue id). Say so when presenting the draft.
 * **Line 2** is blank.
 * **Body** is one concise bullet per major theme being integrated, each prefixed with `- `. Each bullet:
   * MUST be a SINGLE physical line; do NOT wrap inside a bullet.
