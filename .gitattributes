@@ -2,7 +2,8 @@
 # Portable Git attributes.
 # Normalize to LF in the repository; check out CRLF only for Windows-only
 # scripts. Also assigns language-aware diff hunk headers, marks known
-# binary formats, and excludes dev metadata from `git archive`.
+# binary formats, and lists dev metadata to exclude from `git archive`
+# (shipped commented out; see the Archive export section).
 # Anything not listed below falls back to `text=auto` content detection.
 # =====================================================================
 
@@ -93,7 +94,9 @@ CMakeLists.txt  diff=cmake
 # =====================================================================
 # Raw bytes: disable EOL normalization but keep diff for review
 # (patches contain CRLF lines that must survive; PEM certs and keys
-#  carry meaningful textual headers worth diffing).
+#  carry meaningful textual headers, so they stay diffable when a
+#  project deliberately tracks them; .gitignore ignores *.pem and *.key
+#  by default).
 # =====================================================================
 *.patch         -text
 *.diff          -text
@@ -343,12 +346,58 @@ bun.lockb       binary
 *.pfx           binary
 
 # =====================================================================
-# Archive export: omit dev metadata from `git archive` tarballs
+# Archive export: omit dev metadata from `git archive` tarballs.
+# Shipped commented out: in the template repository these paths ARE the
+# product, and forge source downloads (for example GitHub's Download ZIP)
+# honor export-ignore. repo-init offers to uncomment every
+# `# <path> export-ignore` line in a consumer repository.
 # =====================================================================
-.gitattributes  export-ignore
-.gitignore      export-ignore
-.gitmodules     export-ignore
-.gitmessage     export-ignore
-.claude/        export-ignore
-.github/        export-ignore
-.gitlab/        export-ignore
+# .gitattributes  export-ignore
+# .gitignore      export-ignore
+# .gitmodules     export-ignore
+# .gitmessage     export-ignore
+# .github/        export-ignore
+# .gitlab/        export-ignore
+
+# =====================================================================
+# AI agent tools. Canonical content lives in AGENTS.md and .agents/;
+# tool directories hold only adapters (see AGENTS.md, Layout).
+# =====================================================================
+# Skills adapter links (`.<tool>/skills -> ../.agents/skills`): Windows
+# links are typed and git records no type, so declare them as directory
+# links (Git for Windows honors symlink=dir; other git builds ignore the
+# attribute harmlessly). No effect on the real .agents/skills directory.
+skills          symlink=dir
+
+# Archive export: the canonical AGENTS.md and .agents/, plus the root
+# instruction files and project-level directories of mainstream AI agent
+# tools. Listing absent paths is harmless. Commented out in the template
+# like the section above. Add a tool not listed here when adding its
+# adapter; once enabled, repo-init reports adapter links whose top
+# directory is missing. Keep the trailing slash on directories: `dir/`
+# patterns match directory paths only. Cline reads workspace rules from
+# either a `.clinerules/` or a `.cline/rules/` directory, so both top
+# directories are listed. The root instruction file names carry no leading slash, so
+# they also match nested AGENTS.md, CLAUDE.md, and GEMINI.md files;
+# excluding those nested instruction files is deliberate.
+# .agents/        export-ignore
+# .amazonq/       export-ignore
+# .claude/        export-ignore
+# .cline/         export-ignore
+# .clinerules/    export-ignore
+# .codex/         export-ignore
+# .continue/      export-ignore
+# .cursor/        export-ignore
+# .devin/         export-ignore
+# .gemini/        export-ignore
+# .junie/         export-ignore
+# .kiro/          export-ignore
+# .opencode/      export-ignore
+# .roo/           export-ignore
+# .trae/          export-ignore
+# .windsurf/      export-ignore
+# AGENTS.md       export-ignore
+# CLAUDE.md       export-ignore
+# GEMINI.md       export-ignore
+# .cursorrules    export-ignore
+# .windsurfrules  export-ignore
