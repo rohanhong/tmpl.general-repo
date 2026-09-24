@@ -18,9 +18,9 @@ For users with old-tutorial muscle memory:
 ## Most-used commands
 
 ```bash
-hf auth whoami --format agent        # parseable single line: user=... orgs=...
+HF_HUB_DISABLE_UPDATE_CHECK=1 hf auth whoami --format agent   # exit 0: user=... [orgs=...]; non-zero: not logged in
 hf auth login [--force]              # paste a token; --force forces re-login
-hf repos create <owner>/<name> --type model [--private]
+hf repos create <owner>/<name> --type <model|dataset> [--private]
 hf upload <repo> <local> <remote> --commit-message "..."
 hf download <repo> <remote> --local-dir <dir>
 ```
@@ -29,10 +29,12 @@ Python API for atomic multi-file commits: see `hf-upload`. Python API for downlo
 
 ## Probe HF state without a browser
 
+`<repo_type>` is the Phase 3b choice (`model` or `dataset`); a dataset repo queried as `model` returns 404:
+
 ```python
 from huggingface_hub import HfApi
 api = HfApi()
-info = api.repo_info("<owner>/<repo>", repo_type="model", files_metadata=True)
+info = api.repo_info("<owner>/<repo>", repo_type="<repo_type>", files_metadata=True)
 print("private:", info.private, "HEAD:", info.sha)
 for s in info.siblings:
     lfs = getattr(s, "lfs", None)

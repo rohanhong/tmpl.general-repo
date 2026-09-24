@@ -16,7 +16,7 @@ Draft `<consumer-repo>/<package>/config/model_weights.yaml` (adapt the path to t
 # Manifest pinning HF Hub artifacts to a specific commit.
 # Updating: push to HF, then bump hf_revision + per-file sha256 in this yaml.
 hf_repo: <owner>/<repo>
-hf_repo_type: model               # model | dataset | space; MUST match the Phase 3b choice
+hf_repo_type: model               # model | dataset; MUST match the Phase 3b choice
 hf_revision: <40-char commit SHA from Phase 5c>
 # The `weights` key is historical: it holds every pinned artifact, including
 # datasets, rosbags, and CSVs when hf_repo_type is `dataset`.
@@ -29,17 +29,25 @@ weights:
     sha256: <...>
 ```
 
-Compute sha256 with `sha256sum <local-file>` through the `Bash` tool (PowerShell's equivalent is `Get-FileHash -Algorithm SHA256 <local-file>`). This is already done during Phase 5b if you followed the order.
+Compute sha256 in a POSIX shell with the probed interpreter (`<python>`, the name Phase 0a probe 2 printed), which prints lowercase hex on every platform (macOS ships no `sha256sum`, and other tools differ in case and output format):
 
-**Gate.** Choose the verb by target state: **write** / **abort** when the path does not exist (new file via `Write`), **edit** / **abort** when it already exists (in-place change via `Edit`, preserving unrelated lines). Render either the full proposed content (new file) or the resulting diff (existing file) inline before asking. Never run `Write` against an existing `model_weights.yaml`; that would clobber hand-tuned entries.
+```bash
+P=<local-file>
+command -v cygpath >/dev/null 2>&1 && P="$(cygpath -m "$P")"   # Git Bash leaves a path with ' or * unconverted; no-op elsewhere
+<python> -c 'import hashlib,sys;h=hashlib.sha256();f=open(sys.argv[1],"rb");[h.update(b) for b in iter(lambda:f.read(1<<20),b"")];print(h.hexdigest())' "$P"
+```
+
+Record the digest in lowercase; `fetch_weights.py` compares case-insensitively anyway. This is already done during Phase 5b if you followed the order.
+
+**Gate.** Choose the verb by target state: **write** / **abort** when the path does not exist (new file), **edit** / **abort** when it already exists (in-place edit, preserving unrelated lines). Render either the full proposed content (new file) or the resulting diff (existing file) inline before asking. Never overwrite an existing `model_weights.yaml` wholesale; that would clobber hand-tuned entries.
 
 ## 6b. Downloader script
 
-Lift the canonical `fetch_weights.py` reference implementation from the `hf-download` skill (per-file `hf_hub_download` loop, basename collision guard, sha256-keyed conditional skip, `shutil.copyfile` flatten to a single directory, and the `HfHubHTTPError` comment documenting LFS-object purge as a common 404 cause). Adapt the path constants (`REPO_ROOT`, `CONFIG_PATH`, `DEST_DIR`) to the consumer's layout and reuse the Phase 6a manifest format verbatim.
+Copy the canonical `fetch_weights.py` reference implementation from `../hf-download/SKILL.md` (relative to the `hf-setup` skill directory; section `Reference: fetch_weights.py`), the single maintained copy (per-file `hf_hub_download` loop, basename collision guard, sha256-keyed conditional skip, `shutil.copyfile` flatten to a single directory, and the `HfHubHTTPError` comment documenting LFS-object purge as a common 404 cause). Set the default paths (`REPO_ROOT`, `CONFIG_PATH`, `DEST_DIR`) to match the consumer's layout and reuse the Phase 6a manifest format verbatim. The script reads overrides at run time, so no caller edits it: `--config` / `--dest`, or the `FETCH_WEIGHTS_CONFIG` / `FETCH_WEIGHTS_DEST` environment variables (the options win). It imports PyYAML (`yaml`) besides `huggingface_hub`; add both to the consumer's dependencies. It reads the manifest with `read_text(encoding="utf-8")`; keep that argument, since the platform default (such as cp936 on a Chinese Windows) fails on non-ASCII manifest comments.
 
 Do NOT invoke the `hf-download` skill from here. Its interactive gate is for one-off downloads and does not apply to a script that runs unattended in CI or robot bootstrap; the scaffolded script intentionally contains no prompts. This skill's gate sits one level up, at scaffolding time, not inside the generated code.
 
-**Gate.** Render the full proposed file content inline (plus a diff when the target already exists), then ask **write** / **abort**. Only on **write** invoke `Write` against `<consumer-repo>/<package>/scripts/fetch_weights.py` (or whatever name the consumer's conventions prefer).
+**Gate.** Render the full proposed file content inline (plus a diff when the target already exists), then ask **write** / **abort**. Only on **write** create `<consumer-repo>/<package>/scripts/fetch_weights.py` (or whatever name the consumer's conventions prefer).
 
 ## 6c. Runtime verification (recommended)
 
@@ -49,11 +57,11 @@ In the consumer code (the ROS node, the training script, the CLI tool), re-verif
 * Disk file silently corrupted (rare but real on SD-card-backed robots).
 * Someone manually edited or replaced the file.
 
-Verification reuses the Phase 6a manifest, preserving the single source of truth. Symbol names match the `hf-download` reference implementation, so `_sha256_of` and `CONFIG_PATH` must be imported from the scaffolded `fetch_weights.py` (or duplicated in the consumer module) rather than assumed to be in scope. Substitute the consumer's logger for `log_fatal`:
+Verification reuses the Phase 6a manifest, preserving the single source of truth. Symbol names match the `hf-download` reference implementation, so `_sha256_of` and `CONFIG_PATH` (plus the standard `os`, `sys`, `pathlib`, and `yaml` imports) must be imported from the scaffolded `fetch_weights.py` (or duplicated in the consumer module) rather than assumed to be in scope. `CONFIG_PATH` honors `FETCH_WEIGHTS_CONFIG` but not the fetcher's `--config` option; use the environment variable when both must read a non-default manifest. Substitute the consumer's logger for `log_fatal`:
 
 ```python
 def verify_pinned_weight(path):
-    spec = yaml.safe_load(CONFIG_PATH.read_text())
+    spec = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
     entry = next(
         (v for v in spec["weights"].values()
          if os.path.basename(v["filename"]) == os.path.basename(path)),
@@ -64,7 +72,7 @@ def verify_pinned_weight(path):
     if not os.path.exists(path):
         log_fatal(f"Pinned weight missing: {path}. Run fetch_weights.py.")
         sys.exit(1)
-    if _sha256_of(pathlib.Path(path)) != entry["sha256"]:
+    if _sha256_of(pathlib.Path(path)) != str(entry["sha256"]).lower():
         log_fatal(f"Pinned weight sha256 drift: {path}. Re-run fetch_weights.py.")
         sys.exit(1)
 ```
@@ -78,19 +86,21 @@ def verify_pinned_weight(path):
 
 Both keep verification on the same code path as model loading, so a missing or drifted weight surfaces in the same line range an operator already inspects when a node fails to start. For a consumer with an optional lazy-loaded weight, gate `verify_pinned_weight` on the enable flag: a manifest-listed path makes missing-or-drift fatal, while a custom non-manifest path returns silently and preserves the existing lazy-skip behaviour.
 
-**Gate.** Only when Claude is doing the edit on the user's behalf: render the per-file diff inline, then ask **patch** / **abort**, one gate per consumer file. Do not batch unrelated files behind a single prompt. When the user is editing themselves and only wants the pattern, no gate is required because Claude writes nothing.
+**Gate.** Only when the agent is doing the edit on the user's behalf: render the per-file diff inline, then ask **patch** / **abort**, one gate per consumer file. Do not batch unrelated files behind a single prompt. When the user is editing themselves and only wants the pattern, no gate is required because the agent writes nothing.
 
 ## 6d. `.gitignore` the download target
 
 Downloaded files must not be committed to the consumer repo; that would defeat the point of using HF. Add the destination directory to the consumer repo's `.gitignore`, documenting the why so a future reader does not re-add the files thinking the rule is mistaken:
 
 ```text
-# Model weights are pulled from Hugging Face Hub by scripts/fetch_weights.py
-# (see config/model_weights.yaml). Do not commit the downloaded files.
-models/
+# Model weights are pulled from Hugging Face Hub by <package>/scripts/fetch_weights.py
+# (see <package>/config/model_weights.yaml). Do not commit the downloaded files.
+/<package>/models/
 ```
 
-**Gate.** Render the planned diff inline (append at the end of the existing file unless a clearly related block already exists), then ask **append** / **abort**. Only on **append** invoke `Edit` against `<consumer-repo>/.gitignore`. Never run `Write` against an existing `.gitignore`; `Edit` preserves unrelated rules.
+Anchor the rule to the default `DEST_DIR` path relative to the consumer repo root (leading `/`, path from the repo root to the directory; `/models/` when the package sits at the repo root): a bare `models/` would also ignore every unrelated `models/` directory, including source packages of that name.
+
+**Gate.** Render the planned diff inline (append at the end of the existing file unless a clearly related block already exists), then ask **append** / **abort**. Only on **append** edit `<consumer-repo>/.gitignore` in place. Never overwrite an existing `.gitignore` wholesale; an in-place edit preserves unrelated rules.
 
 ## 6e. Deploy token and build / CI integration
 
@@ -104,10 +114,10 @@ Create the Read-only deploy token deferred from Phase 4a:
 Wire the download into whatever orchestrates the consumer:
 
 * **catkin / ROS**: register `fetch_weights.py` in `catkin_install_python`; call it from a bootstrap script before `catkin_make`, or have the launch system invoke it as a precondition.
-* **Python package**: add a `make fetch` target, a `setup.py` postinstall hook, or call it lazily from `__init__`.
-* **Docker image**: run `fetch_weights.py` in a `RUN` step with `--secret id=hf_token` so the token does not bake into a layer.
+* **Python package**: add a `make fetch` target or a documented bootstrap step run before tests and launch. Do not use a `setup.py` postinstall hook (it does not run for wheel installs) or a lazy call from `__init__` (a runtime-startup download, which the Hard rules in `SKILL.md` forbid).
+* **Docker image**: expose the token to one `RUN` step as a build secret so it does not bake into a layer: `RUN --mount=type=secret,id=hf_token,env=HF_TOKEN python3 scripts/fetch_weights.py` in the Dockerfile, built with `docker build --secret id=hf_token,env=HF_TOKEN .` (see `https://docs.docker.com/build/building/secrets/`). A bare `--secret id=hf_token` only mounts a file at `/run/secrets/hf_token`, which the fetcher does not read. Never pass the token through `ARG` or `ENV`.
 * **CI**: store the deploy token as a CI secret exported as `HF_TOKEN`; the fetcher's `os.environ.get("HF_TOKEN")` picks it up.
-* **Robot deploy**: write the deploy token to `/etc/environment` or a systemd unit's `EnvironmentFile=`. Never check it into the robot's deployment repo.
+* **Robot deploy**: put `HF_TOKEN=<token>` in a root-owned, mode `0600` file referenced by the fetching systemd unit's `EnvironmentFile=`. Never use `/etc/environment`, which is world-readable, and never check the token into the robot's deployment repo.
 
 **Timing contract.** `fetch_weights.py` must run to success at least once before any launch, test, or runtime model load. Two acceptable placements: a bootstrap step before the project's build command (`pip install -e .`, `catkin_make`, `cargo build`, whatever applies) so the build fails fast when weights cannot be fetched, or the process supervisor invoking it as a system precondition before starting the consumer. The two-phase split (build-time fetch with network, runtime verify without) is the contract; collapsing them is prohibited by the Hard rules in `SKILL.md`.
 
