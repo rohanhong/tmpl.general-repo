@@ -83,8 +83,9 @@ EOF
 | `.agents/skills/` | 下列技能 |
 | `CLAUDE.md`、`.claude/skills` | Claude Code 适配器：一行 `@AGENTS.md` 导入，以及指向 `.agents/skills` 的链接 |
 | `.github/assets/` | README 图片 |
+| `.github/settings.yml` | GitHub About 栏（简介、网站、topics）的记录；GitHub 不读取它，改动需手动同步 |
 | `docs/i18n/` | README 与贡献指南的译文 |
-| `LICENSE` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `SECURITY.md` | 法律与社区文件；`repo-docs` 会为你的项目重写 |
+| `LICENSE` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `SECURITY.md` | 法律与社区文件；`repo-docs` 会为你的项目重写它们以及设置记录 |
 
 | 分组 | 技能 | 作用 |
 |---|---|---|

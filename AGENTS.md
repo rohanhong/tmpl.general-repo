@@ -23,9 +23,14 @@ file is the single source of instructions; edit it, never an adapter file.
   translation (`docs/i18n/<NAME>.<locale>.md`) changes in the same change
   set. The `repo-docs` skill owns the front-page documents (README,
   CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, LICENSE, and when needed TERMS,
-  NOTICE, and COPYING), their translations, and
-  the header images in `.github/assets/`. README files may use emoji; README
-  and CONTRIBUTING files and their translations may use non-English text.
+  NOTICE, and COPYING), their translations, the header images in
+  `.github/assets/`, and the settings record `.github/settings.yml`.
+  README files may use emoji; README and CONTRIBUTING files and their
+  translations may use non-English text.
+- `.github/settings.yml` records the GitHub "About" panel (description,
+  website, topics) and the template flag. GitHub does not read it: change
+  the file first, then apply it on GitHub by hand; a change made on GitHub
+  is copied back into the file.
 
 ## Layout
 

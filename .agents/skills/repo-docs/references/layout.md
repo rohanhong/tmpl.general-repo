@@ -1,6 +1,6 @@
 # README layout
 
-Loaded from `repo-docs/SKILL.md` before drafting a README. The template repository's own `README.md` (in the template itself, not in a copy made from it) is a worked example of this layout.
+Loaded from `repo-docs/SKILL.md` before drafting a README and its settings record. The template repository's own `README.md` (in the template itself, not in a copy made from it) is a worked example of this layout.
 
 ## Survey basis
 
@@ -97,3 +97,14 @@ Star History chart. star-history.com's own snippet (copied from the site, carryi
 * Keep the proper name recognizable: a descriptive name (such as "General Repository Template") may be translated; a coined name, code name, product name, or command stays as is.
 * Write each paragraph and list item of a Chinese, Japanese, or Korean translation on one line: GitHub renders a line break inside a paragraph as a space, which shows up between CJK characters. Put a space between CJK text and adjacent Latin words or code spans.
 * The English file is canonical. Change the translations in the same change set as the English file (AGENTS.md, Conventions).
+
+## Settings record
+
+`.github/settings.yml` records the GitHub About panel in the Settings App format (https://github.com/repository-settings/app). GitHub does not read it; the owner applies it by hand, or installs that app to sync it (the app lets anyone who can push to the default branch change these settings, so that choice stays with the owner). The template repository's own file (in the template itself, not in a copy made from it) is a worked example.
+
+* Keys, under `repository:`: `description` (the README tagline, at most 350 characters), `homepage` (the project website, or `""`), `topics`, and `is_template` (`true` only when the repository is itself a template for others to copy).
+* `topics`: one comma-separated string drawn from the gathered facts, never invented; at most 20, each made of lowercase letters, digits, and hyphens, starting with a letter or digit, at most 50 characters (the GitHub limits).
+* A trailing comment records the "Include in the home page" toggles, which the Settings App cannot manage. Create mode records Releases and Packages shown, Deployments hidden.
+* Upgrade mode keeps the existing values and their form (a topics list stays a list) unless the user changes them in step 9. In every mode, other Settings App keys (labels, branch protection) and their comments stay unchanged.
+* Use `>-` block scalars for `description` and `topics` when they wrap (AGENTS.md, Skill authoring).
+* The header comment states that GitHub does not read the file and how to apply it. The template's own file also carries a note naming the template, so the step-1 residue probe finds it in a copy; a rewrite drops that note.

@@ -96,8 +96,9 @@ EOF
 | `.agents/skills/` | The skills below |
 | `CLAUDE.md`, `.claude/skills` | Claude Code adapters: an `@AGENTS.md` import and a link to `.agents/skills` |
 | `.github/assets/` | README images |
+| `.github/settings.yml` | Record of the GitHub About panel (description, website, topics); GitHub does not read it, so apply changes by hand |
 | `docs/i18n/` | Translations of the README and the Contributing guide |
-| `LICENSE` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `SECURITY.md` | Legal and community files; `repo-docs` rewrites them for your project |
+| `LICENSE` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `SECURITY.md` | Legal and community files; `repo-docs` rewrites them, and the settings record, for your project |
 
 | Group | Skills | What they do |
 |---|---|---|

@@ -1,0 +1,37 @@
+# GitHub repository settings: the "About" panel and the template flag.
+#
+# This file is the recorded source of truth. GitHub itself does not read
+# it: apply changes by hand (repository page, gear icon next to "About",
+# and Settings > General for is_template). The keys follow the Settings
+# App format (https://github.com/repository-settings/app), so installing
+# that app later syncs this file on every push to the default branch
+# without any migration.
+#
+# A repository created from this template (tmpl.general-repo) inherits
+# this file with the template's values; the repo-docs skill rewrites it
+# for the new project and drops this note.
+
+repository:
+  # At most 350 characters. Mirrors the README tagline.
+  description: >-
+    Git hygiene, agent instructions, and gated agent skills, ready for
+    any new repository.
+
+  # Project website; empty when there is none.
+  homepage: ""
+
+  # Comma-separated, at most 20. Each topic: lowercase letters, digits,
+  # and hyphens, starting with a letter or digit, at most 50 characters.
+  topics: >-
+    template, repository-template, agents-md, agent-skills, claude-code,
+    git-workflow, conventional-commits
+
+  # Enables the "Use this template" button and the README badge that
+  # links to /generate.
+  is_template: true
+
+# "Include in the home page" toggles. The Settings App cannot manage
+# these; set them by hand. Recorded here so the intended state is known.
+#   Releases:    shown
+#   Deployments: hidden
+#   Packages:    shown
