@@ -3,7 +3,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../../.github/assets/banner-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="../../.github/assets/banner-light.svg">
-  <img alt="tmpl.general-repo" src="../../.github/assets/banner-light.svg" width="640">
+  <img alt="tmpl.general-repo" src="../../.github/assets/banner-light.svg" width="455">
 </picture>
 
 <h1>🧰 通用仓库模板</h1>
