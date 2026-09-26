@@ -104,6 +104,7 @@ Star History chart. star-history.com's own snippet (copied from the site, carryi
 
 * Keys, under `repository:`: `description` (the README tagline, at most 350 characters), `homepage` (the project website, or `""`), `topics`, and `is_template` (`true` only when the repository is itself a template for others to copy).
 * `topics`: one comma-separated string drawn from the gathered facts, never invented; at most 20, each made of lowercase letters, digits, and hyphens, starting with a letter or digit, at most 50 characters (the GitHub limits).
+* Format checks do not guarantee that GitHub accepts a topic: its topic picker may offer only a variant (known case: `agents-md`, offered only as `agents-md-template`). Drafted topics are candidates: never draft a topic known to be refused, and once the owner applies them on GitHub, copy the accepted set back into the file.
 * A trailing comment records the "Include in the home page" toggles, which the Settings App cannot manage. Create mode records Releases and Packages shown, Deployments hidden.
 * Upgrade mode keeps the existing values and their form (a topics list stays a list) unless the user changes them in step 9. In every mode, other Settings App keys (labels, branch protection) and their comments stay unchanged.
 * Use `>-` block scalars for `description` and `topics` when they wrap (AGENTS.md, Skill authoring).
