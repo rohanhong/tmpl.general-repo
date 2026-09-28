@@ -23,12 +23,12 @@ Contributor Covenant 3.0. Fetch it; never write it from memory:
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; D="${TMPDIR:-/tmp}/repo-docs-$(printf %s "$ROOT" | cksum | cut -d' ' -f1)"
 rm -f "${D:?}/CODE_OF_CONDUCT.md" "${D:?}/coc.src" &&
   curl -fsSL -o "$D/coc.src" https://www.contributor-covenant.org/version/3/0/code_of_conduct/code_of_conduct.md &&
-  sed "s/$(printf '\342\200\231')/'/g" "$D/coc.src" | sed '/./,$!d' > "$D/CODE_OF_CONDUCT.md" &&
+  sed "s/$(printf '\342\200\231')/'/g" "$D/coc.src" | awk '/./ { while (n > 0) { print ""; n-- } print; s = 1; next } s { n++ }' > "$D/CODE_OF_CONDUCT.md" &&
   [ -s "$D/CODE_OF_CONDUCT.md" ] && rm -f "${D:?}/coc.src" && echo fetched &&
   { LC_ALL=C grep -n "$(printf '[^\t -~]')" "$D/CODE_OF_CONDUCT.md"; case $? in 0) echo "non-ASCII left";; 1) echo "ascii ok";; *) echo "check failed";; esac; }
 ```
 
-The two `sed` passes replace typographic apostrophes (U+2019) with `'` and drop leading blank lines. Without the `fetched` line, report it and stop. When the last line says `non-ASCII left`, report the listed characters rather than writing them: upstream added something new. `check failed` also stops the file. Then:
+The `sed` pass replaces typographic apostrophes (U+2019) with `'`; the `awk` pass drops leading and trailing blank lines, so the file ends in exactly one newline. Without the `fetched` line, report it and stop. When the last line says `non-ASCII left`, report the listed characters rather than writing them: upstream added something new. `check failed` also stops the file. Then:
 * Replace `**[NOTE: describe your means of reporting here.]**` with the conduct contact, as a sentence that completes "To report a possible violation, ...".
 * Remove the paragraph starting `**[NOTE: The remedies and repairs outlined below` when the project adopts the enforcement ladder as written; otherwise replace it with the project's own policy.
 
